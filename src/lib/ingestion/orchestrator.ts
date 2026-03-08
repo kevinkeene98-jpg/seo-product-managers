@@ -4,11 +4,13 @@ import { jobs, crawlLogs } from "@/db/schema";
 import { SEARCH_KEYWORDS, SEARCH_LOCATIONS } from "@/lib/constants";
 import { SerpProvider } from "./serp-provider";
 import { transformToJobInsert } from "./transformer";
+import { getCompanyLogoUrl, clearLogoCache } from "./brandfetch";
 import type { CrawlSummary, SearchQuery } from "./types";
 
 export async function runCrawl(): Promise<CrawlSummary> {
   const provider = new SerpProvider();
   const crawlStartTime = new Date();
+  clearLogoCache();
   let totalNew = 0;
   let totalUpdated = 0;
   let totalErrors = 0;
@@ -39,6 +41,12 @@ export async function runCrawl(): Promise<CrawlSummary> {
 
         for (const raw of results) {
           const data = transformToJobInsert(raw, keyword, loc.label);
+
+          // Fetch Brandfetch logo (cached per company name within this crawl)
+          const brandfetchLogo = await getCompanyLogoUrl(raw.companyName);
+          if (brandfetchLogo) {
+            data.companyLogoUrl = brandfetchLogo;
+          }
 
           const result = await db
             .insert(jobs)
