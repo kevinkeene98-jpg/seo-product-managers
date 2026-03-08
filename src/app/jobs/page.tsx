@@ -22,6 +22,7 @@ export default async function JobsPage({ searchParams }: PageProps) {
   const filters = {
     page: params.page ? Number(params.page) : 1,
     limit: 20,
+    q: typeof params.q === "string" ? params.q : undefined,
     location: typeof params.location === "string" && params.location !== "all"
       ? (params.location as "new_york" | "colorado" | "remote")
       : undefined,
@@ -29,9 +30,6 @@ export default async function JobsPage({ searchParams }: PageProps) {
     salary_max: params.salary_max ? Number(params.salary_max) : undefined,
     work_type: typeof params.work_type === "string" && params.work_type !== "any"
       ? (params.work_type as "remote" | "hybrid" | "in_office")
-      : undefined,
-    job_type: typeof params.job_type === "string" && params.job_type !== "all"
-      ? (params.job_type as "product" | "growth")
       : undefined,
     experience: typeof params.experience === "string" && params.experience !== "all"
       ? (params.experience as "entry" | "mid" | "senior")
@@ -67,25 +65,33 @@ export default async function JobsPage({ searchParams }: PageProps) {
   }));
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 py-8">
       <h1 className="mb-6 text-3xl font-bold">Browse Jobs</h1>
 
-      <Suspense fallback={<Skeleton className="h-12 w-full" />}>
-        <JobFilters />
-      </Suspense>
+      <div className="flex flex-col gap-8 lg:flex-row">
+        {/* Sticky sidebar filters */}
+        <div className="w-full shrink-0 lg:w-60">
+          <div className="lg:sticky lg:top-24">
+            <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+              <JobFilters />
+            </Suspense>
+          </div>
+        </div>
 
-      <div className="mt-8">
-        <Suspense
-          fallback={
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-40 w-full" />
-              ))}
-            </div>
-          }
-        >
-          <JobList jobs={jobs} pagination={result.pagination} />
-        </Suspense>
+        {/* Job list */}
+        <div className="min-w-0 flex-1">
+          <Suspense
+            fallback={
+              <div className="space-y-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-40 w-full" />
+                ))}
+              </div>
+            }
+          >
+            <JobList jobs={jobs} pagination={result.pagination} />
+          </Suspense>
+        </div>
       </div>
     </div>
   );

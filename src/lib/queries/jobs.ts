@@ -1,10 +1,22 @@
-import { eq, and, gte, lte, ilike, sql, SQL } from "drizzle-orm";
+import { eq, and, gte, lte, ilike, or, sql, SQL } from "drizzle-orm";
 import { db } from "@/db";
 import { jobs } from "@/db/schema";
 import type { JobsQuery } from "@/lib/validators/jobs";
 
 export async function getActiveJobs(filters: JobsQuery) {
   const conditions: SQL[] = [eq(jobs.status, "active")];
+
+  // Keyword search (title, company name, description)
+  if (filters.q) {
+    const term = `%${filters.q}%`;
+    conditions.push(
+      or(
+        ilike(jobs.title, term),
+        ilike(jobs.companyName, term),
+        ilike(jobs.description, term)
+      )!
+    );
+  }
 
   // Location filter
   if (filters.location) {
@@ -29,9 +41,6 @@ export async function getActiveJobs(filters: JobsQuery) {
   if (filters.work_type) {
     conditions.push(eq(jobs.workType, filters.work_type));
   }
-  if (filters.job_type) {
-    conditions.push(eq(jobs.jobType, filters.job_type));
-  }
   if (filters.experience) {
     conditions.push(eq(jobs.experienceLevel, filters.experience));
   }
@@ -46,23 +55,36 @@ export async function getActiveJobs(filters: JobsQuery) {
   const where = and(...conditions);
   const offset = (filters.page - 1) * filters.limit;
 
-  // Get total count
+  // Deduplicated count: count unique title+company combos
   const [{ count: total }] = await db
     .select({ count: sql<number>`COUNT(*)::int` })
-    .from(jobs)
-    .where(where);
+    .from(
+      sql`(
+        SELECT DISTINCT ON (LOWER(TRIM(title)), LOWER(TRIM(company_name))) id
+        FROM jobs
+        WHERE ${where}
+        ORDER BY LOWER(TRIM(title)), LOWER(TRIM(company_name)), salary_max DESC NULLS LAST, id
+      ) AS deduped`
+    );
 
-  // Get paginated results, sorted by salary descending with nulls last
-  const results = await db
-    .select()
-    .from(jobs)
-    .where(where)
-    .orderBy(sql`${jobs.salaryMax} DESC NULLS LAST`)
-    .limit(filters.limit)
-    .offset(offset);
+  // Deduplicated results using DISTINCT ON (title, company_name)
+  // Keeps the row with the highest salary_max for each title+company pair
+  const results = await db.execute(
+    sql`
+      SELECT * FROM (
+        SELECT DISTINCT ON (LOWER(TRIM(title)), LOWER(TRIM(company_name))) *
+        FROM jobs
+        WHERE ${where}
+        ORDER BY LOWER(TRIM(title)), LOWER(TRIM(company_name)), salary_max DESC NULLS LAST, id
+      ) AS deduped
+      ORDER BY salary_max DESC NULLS LAST
+      LIMIT ${filters.limit}
+      OFFSET ${offset}
+    `
+  );
 
   return {
-    jobs: results,
+    jobs: results.rows as (typeof jobs.$inferSelect)[],
     pagination: {
       page: filters.page,
       limit: filters.limit,

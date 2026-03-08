@@ -3,6 +3,7 @@ import { z } from "zod";
 export const jobsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
+  q: z.string().optional(),
   location: z
     .enum(["new_york", "colorado", "remote"])
     .optional(),
@@ -11,7 +12,6 @@ export const jobsQuerySchema = z.object({
   work_type: z
     .enum(["remote", "hybrid", "in_office"])
     .optional(),
-  job_type: z.enum(["product", "growth"]).optional(),
   experience: z.enum(["entry", "mid", "senior"]).optional(),
   new_only: z
     .enum(["true", "false"])

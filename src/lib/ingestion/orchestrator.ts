@@ -1,4 +1,4 @@
-import { eq, and, lt, sql } from "drizzle-orm";
+import { eq, and, lt, ilike, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { jobs, crawlLogs } from "@/db/schema";
 import { SEARCH_KEYWORDS, SEARCH_LOCATIONS } from "@/lib/constants";
@@ -13,8 +13,12 @@ export async function runCrawl(): Promise<CrawlSummary> {
   clearLogoCache();
   let totalNew = 0;
   let totalUpdated = 0;
+  let totalSkipped = 0;
   let totalErrors = 0;
   let queryCount = 0;
+
+  // Track title+company pairs seen during this crawl to avoid duplicates
+  const seenThisCrawl = new Set<string>();
 
   for (const keyword of SEARCH_KEYWORDS) {
     for (const loc of SEARCH_LOCATIONS) {
@@ -41,6 +45,49 @@ export async function runCrawl(): Promise<CrawlSummary> {
 
         for (const raw of results) {
           const data = transformToJobInsert(raw, keyword, loc.label);
+
+          // Deduplicate by title + company name (case-insensitive)
+          const dedupKey = `${data.title.trim().toLowerCase()}||${data.companyName.trim().toLowerCase()}`;
+
+          // Skip if we already saw this title+company in this crawl
+          if (seenThisCrawl.has(dedupKey)) {
+            totalSkipped++;
+            // Still update lastSeenAt on the existing record via serpJobId upsert
+            await db
+              .insert(jobs)
+              .values(data)
+              .onConflictDoUpdate({
+                target: jobs.serpJobId,
+                set: { lastSeenAt: new Date(), missedCrawlCount: 0, status: "active" },
+              });
+            continue;
+          }
+
+          // Check if a job with same title+company already exists in DB (from prior crawls)
+          const [existing] = await db
+            .select({ id: jobs.id })
+            .from(jobs)
+            .where(
+              and(
+                ilike(jobs.title, data.title.trim()),
+                ilike(jobs.companyName, data.companyName.trim()),
+                eq(jobs.status, "active")
+              )
+            )
+            .limit(1);
+
+          if (existing) {
+            seenThisCrawl.add(dedupKey);
+            totalSkipped++;
+            // Update lastSeenAt on the existing record so it doesn't go inactive
+            await db
+              .update(jobs)
+              .set({ lastSeenAt: new Date(), missedCrawlCount: 0 })
+              .where(eq(jobs.id, existing.id));
+            continue;
+          }
+
+          seenThisCrawl.add(dedupKey);
 
           // Fetch Brandfetch logo (cached per company name within this crawl)
           const brandfetchLogo = await getCompanyLogoUrl(raw.companyName);
