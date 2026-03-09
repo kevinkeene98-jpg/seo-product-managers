@@ -34,9 +34,22 @@ export function BuilderHeader({
         >
           &larr; Back
         </Link>
-        <div className="hidden sm:block">
-          <span className="font-semibold">{job.title}</span>
-          <span className="text-muted-foreground"> at {job.companyName}</span>
+        <div className="hidden items-center gap-2 sm:flex">
+          {job.companyLogoUrl ? (
+            <img
+              src={job.companyLogoUrl}
+              alt={job.companyName}
+              className="h-6 w-6 rounded object-contain"
+            />
+          ) : (
+            <div className="flex h-6 w-6 items-center justify-center rounded bg-muted text-xs font-bold text-muted-foreground">
+              {job.companyName.charAt(0)}
+            </div>
+          )}
+          <div>
+            <span className="font-semibold">{job.title}</span>
+            <span className="text-muted-foreground"> at {job.companyName}</span>
+          </div>
         </div>
         <button
           onClick={onToggleJd}
