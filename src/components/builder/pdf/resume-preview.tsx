@@ -16,6 +16,8 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 }
 
 export function ResumePreview({ data }: Props) {
+  const labels = data.sectionLabels ?? {};
+
   return (
     <PageLayout name={data.contactInfo.name}>
       {/* Contact Info */}
@@ -33,7 +35,7 @@ export function ResumePreview({ data }: Props) {
       {/* Summary */}
       {data.summary && (
         <div>
-          <SectionHeading>Summary</SectionHeading>
+          <SectionHeading>{labels.summary || "Summary"}</SectionHeading>
           <p className="mb-1">{data.summary}</p>
         </div>
       )}
@@ -41,7 +43,7 @@ export function ResumePreview({ data }: Props) {
       {/* Experience */}
       {data.experience.length > 0 && (
         <div>
-          <SectionHeading>Experience</SectionHeading>
+          <SectionHeading>{labels.experience || "Experience"}</SectionHeading>
           {data.experience.map((exp) => (
             <div key={exp.id} className="mb-2">
               <div className="flex items-start justify-between">
@@ -71,7 +73,7 @@ export function ResumePreview({ data }: Props) {
       {/* Education */}
       {data.education.length > 0 && (
         <div>
-          <SectionHeading>Education</SectionHeading>
+          <SectionHeading>{labels.education || "Education"}</SectionHeading>
           {data.education.map((edu) => (
             <div key={edu.id} className="mb-1.5">
               <div className="flex items-start justify-between">
@@ -90,7 +92,7 @@ export function ResumePreview({ data }: Props) {
       {/* Skills */}
       {data.skills.length > 0 && (
         <div>
-          <SectionHeading>Skills</SectionHeading>
+          <SectionHeading>{labels.skills || "Skills"}</SectionHeading>
           <p>{data.skills.join(" • ")}</p>
         </div>
       )}
@@ -98,7 +100,7 @@ export function ResumePreview({ data }: Props) {
       {/* Certifications */}
       {data.certifications && data.certifications.length > 0 && (
         <div>
-          <SectionHeading>Certifications</SectionHeading>
+          <SectionHeading>{labels.certifications || "Certifications"}</SectionHeading>
           {data.certifications.map((cert) => (
             <div key={cert.id} className="mb-1">
               <span className="font-bold">{cert.name}</span>

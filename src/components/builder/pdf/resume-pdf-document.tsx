@@ -88,6 +88,8 @@ interface Props {
 }
 
 export function ResumePdfDocument({ data }: Props) {
+  const labels = data.sectionLabels ?? {};
+
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
@@ -104,7 +106,7 @@ export function ResumePdfDocument({ data }: Props) {
         {/* Summary */}
         {data.summary && (
           <>
-            <Text style={styles.sectionTitle}>Summary</Text>
+            <Text style={styles.sectionTitle}>{labels.summary || "Summary"}</Text>
             <Text style={styles.summary}>{data.summary}</Text>
           </>
         )}
@@ -112,7 +114,7 @@ export function ResumePdfDocument({ data }: Props) {
         {/* Experience */}
         {data.experience.length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>Experience</Text>
+            <Text style={styles.sectionTitle}>{labels.experience || "Experience"}</Text>
             {data.experience.map((exp) => (
               <View key={exp.id} style={{ marginBottom: 8 }}>
                 <View style={styles.entryHeader}>
@@ -140,7 +142,7 @@ export function ResumePdfDocument({ data }: Props) {
         {/* Education */}
         {data.education.length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>Education</Text>
+            <Text style={styles.sectionTitle}>{labels.education || "Education"}</Text>
             {data.education.map((edu) => (
               <View key={edu.id} style={{ marginBottom: 6 }}>
                 <View style={styles.entryHeader}>
@@ -159,7 +161,7 @@ export function ResumePdfDocument({ data }: Props) {
         {/* Skills */}
         {data.skills.length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>Skills</Text>
+            <Text style={styles.sectionTitle}>{labels.skills || "Skills"}</Text>
             <Text>{data.skills.join(" • ")}</Text>
           </>
         )}
@@ -167,7 +169,7 @@ export function ResumePdfDocument({ data }: Props) {
         {/* Certifications */}
         {data.certifications && data.certifications.length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>Certifications</Text>
+            <Text style={styles.sectionTitle}>{labels.certifications || "Certifications"}</Text>
             {data.certifications.map((cert) => (
               <View key={cert.id} style={{ marginBottom: 4 }}>
                 <Text style={styles.entryTitle}>{cert.name}</Text>

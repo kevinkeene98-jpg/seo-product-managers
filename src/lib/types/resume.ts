@@ -12,6 +12,13 @@ export interface ResumeData {
   education: EducationEntry[];
   skills: string[];
   certifications?: CertificationEntry[];
+  sectionLabels?: {
+    summary?: string;
+    experience?: string;
+    education?: string;
+    skills?: string;
+    certifications?: string;
+  };
 }
 
 export interface ExperienceEntry {

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { nanoid } from "nanoid";
-import type { ResumeData, ExperienceEntry, EducationEntry } from "@/lib/types/resume";
+import type { ResumeData, ExperienceEntry, EducationEntry, CertificationEntry } from "@/lib/types/resume";
 
 interface Props {
   data: ResumeData;
@@ -13,9 +13,17 @@ interface Props {
 }
 
 export function ResumeSectionEditor({ data, onChange }: Props) {
+  const labels = data.sectionLabels ?? {};
+
   const update = useCallback(
     (partial: Partial<ResumeData>) => onChange({ ...data, ...partial }),
     [data, onChange]
+  );
+
+  const updateLabel = useCallback(
+    (key: string, value: string) =>
+      update({ sectionLabels: { ...labels, [key]: value } }),
+    [labels, update]
   );
 
   const updateContact = useCallback(
@@ -104,6 +112,31 @@ export function ResumeSectionEditor({ data, onChange }: Props) {
     [data, update]
   );
 
+  const updateCertification = useCallback(
+    (index: number, partial: Partial<CertificationEntry>) => {
+      const certs = [...(data.certifications || [])];
+      certs[index] = { ...certs[index], ...partial };
+      update({ certifications: certs });
+    },
+    [data, update]
+  );
+
+  const addCertification = useCallback(() => {
+    update({
+      certifications: [
+        ...(data.certifications || []),
+        { id: nanoid(8), name: "", issuer: "" },
+      ],
+    });
+  }, [data, update]);
+
+  const removeCertification = useCallback(
+    (index: number) => {
+      update({ certifications: (data.certifications || []).filter((_, i) => i !== index) });
+    },
+    [data, update]
+  );
+
   return (
     <div className="space-y-6 p-4">
       {/* Contact Info */}
@@ -123,9 +156,11 @@ export function ResumeSectionEditor({ data, onChange }: Props) {
 
       {/* Summary */}
       <section>
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Summary
-        </h3>
+        <Input
+          className="mb-3 text-sm font-semibold uppercase tracking-wide"
+          value={labels.summary ?? "Summary"}
+          onChange={(e) => updateLabel("summary", e.target.value)}
+        />
         <Textarea
           rows={3}
           placeholder="Professional summary..."
@@ -137,10 +172,12 @@ export function ResumeSectionEditor({ data, onChange }: Props) {
       {/* Experience */}
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Experience
-          </h3>
-          <Button variant="outline" size="sm" onClick={addExperience}>
+          <Input
+            className="text-sm font-semibold uppercase tracking-wide"
+            value={labels.experience ?? "Experience"}
+            onChange={(e) => updateLabel("experience", e.target.value)}
+          />
+          <Button variant="outline" size="sm" className="ml-2 shrink-0" onClick={addExperience}>
             + Add
           </Button>
         </div>
@@ -164,12 +201,12 @@ export function ResumeSectionEditor({ data, onChange }: Props) {
             <div className="mt-2 space-y-1">
               {exp.bullets.map((bullet, j) => (
                 <div key={j} className="flex gap-1">
-                  <span className="mt-2.5 text-muted-foreground">•</span>
-                  <Input
+                  <Textarea
                     value={bullet}
                     onChange={(e) => updateBullet(i, j, e.target.value)}
                     placeholder="Accomplishment or responsibility..."
-                    className="flex-1"
+                    className="min-h-[36px] flex-1 resize-none"
+                    rows={1}
                   />
                   <Button variant="ghost" size="sm" onClick={() => removeBullet(i, j)} className="shrink-0">
                     ×
@@ -187,10 +224,12 @@ export function ResumeSectionEditor({ data, onChange }: Props) {
       {/* Education */}
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Education
-          </h3>
-          <Button variant="outline" size="sm" onClick={addEducation}>
+          <Input
+            className="text-sm font-semibold uppercase tracking-wide"
+            value={labels.education ?? "Education"}
+            onChange={(e) => updateLabel("education", e.target.value)}
+          />
+          <Button variant="outline" size="sm" className="ml-2 shrink-0" onClick={addEducation}>
             + Add
           </Button>
         </div>
@@ -214,9 +253,11 @@ export function ResumeSectionEditor({ data, onChange }: Props) {
 
       {/* Skills */}
       <section>
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Skills
-        </h3>
+        <Input
+          className="mb-3 text-sm font-semibold uppercase tracking-wide"
+          value={labels.skills ?? "Skills"}
+          onChange={(e) => updateLabel("skills", e.target.value)}
+        />
         <Textarea
           rows={2}
           placeholder="Comma-separated skills..."
@@ -230,6 +271,35 @@ export function ResumeSectionEditor({ data, onChange }: Props) {
             })
           }
         />
+      </section>
+
+      {/* Certifications */}
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <Input
+            className="text-sm font-semibold uppercase tracking-wide"
+            value={labels.certifications ?? "Certifications"}
+            onChange={(e) => updateLabel("certifications", e.target.value)}
+          />
+          <Button variant="outline" size="sm" className="ml-2 shrink-0" onClick={addCertification}>
+            + Add
+          </Button>
+        </div>
+        {(data.certifications || []).map((cert, i) => (
+          <div key={cert.id} className="mb-3 rounded-md border p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">Certification {i + 1}</span>
+              <Button variant="ghost" size="sm" onClick={() => removeCertification(i)}>
+                Remove
+              </Button>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Input placeholder="Certification Name" value={cert.name} onChange={(e) => updateCertification(i, { name: e.target.value })} />
+              <Input placeholder="Issuer" value={cert.issuer} onChange={(e) => updateCertification(i, { issuer: e.target.value })} />
+              <Input placeholder="Date (optional)" value={cert.date || ""} onChange={(e) => updateCertification(i, { date: e.target.value })} />
+            </div>
+          </div>
+        ))}
       </section>
     </div>
   );
