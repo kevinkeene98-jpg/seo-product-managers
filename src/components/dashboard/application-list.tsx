@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatSalary } from "@/lib/format";
+import { formatSalary, jobUrl, timeAgo } from "@/lib/format";
 import { useState } from "react";
 import {
   DndContext,
@@ -33,6 +33,7 @@ interface Application {
   location: string;
   salaryMin: number | null;
   salaryMax: number | null;
+  postedAt: string | null;
   updatedAt: string | null;
   hasResume: boolean;
   hasCoverLetter: boolean;
@@ -94,39 +95,45 @@ function SortableCard({
         </svg>
       </button>
 
-      <div className="mr-4 hidden shrink-0 sm:block">
-        {app.companyLogoUrl ? (
-          <img
-            src={app.companyLogoUrl}
-            alt={app.companyName}
-            className="h-10 w-10 rounded-lg object-contain"
-          />
-        ) : (
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm font-bold text-muted-foreground">
-            {app.companyName.charAt(0)}
+      <Link
+        href={jobUrl({ id: app.jobId, companyName: app.companyName, title: app.jobTitle })}
+        className="flex min-w-0 flex-1 items-center"
+      >
+        <div className="mr-4 hidden shrink-0 sm:block">
+          {app.companyLogoUrl ? (
+            <img
+              src={app.companyLogoUrl}
+              alt={app.companyName}
+              className="h-10 w-10 rounded-lg object-contain"
+            />
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm font-bold text-muted-foreground">
+              {app.companyName.charAt(0)}
+            </div>
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <h3 className="truncate font-semibold">{app.jobTitle}</h3>
+            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[app.status] || ""}`}>
+              {app.status}
+            </span>
           </div>
-        )}
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <h3 className="truncate font-semibold">{app.jobTitle}</h3>
-          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[app.status] || ""}`}>
-            {app.status}
-          </span>
+          <p className="text-sm text-muted-foreground">{app.companyName}</p>
+          <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+            {app.location && <span>{app.location}</span>}
+            <span>{formatSalary(app.salaryMin, app.salaryMax)}</span>
+            {app.postedAt && <span>Posted {timeAgo(app.postedAt)}</span>}
+            {app.hasResume && <Badge variant="outline" className="text-xs">Resume</Badge>}
+            {app.hasCoverLetter && <Badge variant="outline" className="text-xs">Cover Letter</Badge>}
+          </div>
+          {app.updatedAt && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Last updated {new Date(app.updatedAt).toLocaleDateString()}
+            </p>
+          )}
         </div>
-        <p className="text-sm text-muted-foreground">{app.companyName}</p>
-        <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-          {app.location && <span>{app.location}</span>}
-          <span>{formatSalary(app.salaryMin, app.salaryMax)}</span>
-          {app.hasResume && <Badge variant="outline" className="text-xs">Resume</Badge>}
-          {app.hasCoverLetter && <Badge variant="outline" className="text-xs">Cover Letter</Badge>}
-        </div>
-        {app.updatedAt && (
-          <p className="mt-1 text-xs text-muted-foreground">
-            Last updated {new Date(app.updatedAt).toLocaleDateString()}
-          </p>
-        )}
-      </div>
+      </Link>
 
       <div className="ml-4 flex items-center gap-2">
         {app.status === "active" && (

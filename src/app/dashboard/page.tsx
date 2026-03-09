@@ -16,6 +16,7 @@ export default async function DashboardPage() {
     location: r.job.location,
     salaryMin: r.job.salaryMin,
     salaryMax: r.job.salaryMax,
+    postedAt: r.job.postedAt?.toISOString() ?? null,
     updatedAt: r.application.updatedAt?.toISOString() ?? null,
     hasResume: !!r.application.resumeContent,
     hasCoverLetter: !!r.application.coverLetterContent,
