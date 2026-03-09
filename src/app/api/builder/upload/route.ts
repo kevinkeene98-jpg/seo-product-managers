@@ -24,9 +24,9 @@ export async function POST(request: Request) {
   let rawText: string;
 
   if (filename.endsWith(".pdf")) {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const pdfParse = require("pdf-parse") as (buf: Buffer) => Promise<{ text: string }>;
-    const parsed = await pdfParse(buffer);
+    const { PDFParse } = await import("pdf-parse");
+    const parser = new PDFParse({ data: buffer });
+    const parsed = await parser.getText();
     rawText = parsed.text;
   } else {
     const mammoth = await import("mammoth");
