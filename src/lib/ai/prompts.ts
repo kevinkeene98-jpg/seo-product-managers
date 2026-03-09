@@ -108,11 +108,12 @@ A: Next answer.
 Be concise, specific, and actionable. Reference specific parts of the resume and job description when making suggestions.`;
 
 export const COVER_LETTER_PROMPT = `Generate a professional cover letter for this candidate applying to this role. The cover letter should:
-- Be addressed professionally
+- Always start with "Dear [Company Name] Hiring Team," where [Company Name] is the actual company name from the job posting
 - Highlight the most relevant experience from their resume
 - Connect their skills to the specific job requirements
 - Be concise (3-4 paragraphs)
-- Sound authentic, not generic`;
+- Sound authentic, not generic
+- Output only the cover letter text, no extra commentary`;
 
 export const QA_PREP_PROMPT = `Generate 5-7 interview preparation questions and suggested answers for this candidate applying to this role. Focus on:
 - Role-specific questions they're likely to face
