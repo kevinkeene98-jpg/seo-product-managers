@@ -37,12 +37,13 @@ export function ChatPanel({
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasTriggeredAssessment = useRef(false);
 
-  // Auto-scroll on new messages
+  // Auto-scroll only when a new message is added (not during streaming updates)
+  const messageCount = messages.length;
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messageCount]);
 
   // Auto-trigger fit assessment on first load if resume exists and no messages
   useEffect(() => {
