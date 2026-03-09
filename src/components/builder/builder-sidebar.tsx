@@ -14,7 +14,7 @@ const navItems = [
 ];
 
 export function BuilderSidebar() {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const pathname = usePathname();
   const { user, signOut, openAuthDialog } = useAuth();
 
