@@ -55,7 +55,7 @@ export function ResumeSectionEditor({ data, onChange }: Props) {
   const addBullet = useCallback(
     (expIndex: number) => {
       const exp = [...data.experience];
-      exp[expIndex] = { ...exp[expIndex], bullets: [...exp[expIndex].bullets, ""] };
+      exp[expIndex] = { ...exp[expIndex], bullets: [...exp[expIndex].bullets, "• "] };
       update({ experience: exp });
     },
     [data, update]
@@ -75,7 +75,7 @@ export function ResumeSectionEditor({ data, onChange }: Props) {
     update({
       experience: [
         ...data.experience,
-        { id: nanoid(8), title: "", company: "", location: "", startDate: "", endDate: "", bullets: [""] },
+        { id: nanoid(8), title: "", company: "", location: "", startDate: "", endDate: "", bullets: ["• "] },
       ],
     });
   }, [data, update]);
