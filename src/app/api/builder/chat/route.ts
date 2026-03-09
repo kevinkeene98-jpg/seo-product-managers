@@ -12,6 +12,7 @@ import type { ResumeData, BuilderTab } from "@/lib/types/resume";
 const FREE_DAILY_LIMIT = 20;
 
 export async function POST(request: Request) {
+  try {
   const sessionId = await getSessionId();
   if (!sessionId) {
     return NextResponse.json({ error: "No session" }, { status: 401 });
@@ -210,4 +211,9 @@ export async function POST(request: Request) {
       Connection: "keep-alive",
     },
   });
+  } catch (err) {
+    console.error("Chat error:", err);
+    const message = err instanceof Error ? err.message : "Chat failed";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
