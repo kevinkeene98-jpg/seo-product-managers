@@ -2,8 +2,6 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getJobById } from "@/lib/queries/jobs";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import {
   formatSalary,
   formatWorkType,
@@ -84,7 +82,7 @@ export default async function JobDetailPage({ params }: PageProps) {
         <div className="mt-6 flex gap-3">
           <Link
             href={`/builder/${job.id}`}
-            className={cn(buttonVariants({ size: "lg" }))}
+            className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90"
           >
             Build Resume
           </Link>
@@ -93,7 +91,7 @@ export default async function JobDetailPage({ params }: PageProps) {
               href={job.applyUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
+              className="inline-flex h-11 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground"
             >
               View Original Posting
             </a>
