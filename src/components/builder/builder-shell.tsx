@@ -10,8 +10,10 @@ import { JobDescriptionTab } from "./tabs/job-description-tab";
 import { ResumePreview } from "./pdf/resume-preview";
 import { CoverLetterPreview } from "./pdf/cover-letter-preview";
 import { ChatPanel } from "./chat/chat-panel";
+import { BuilderSidebar } from "./builder-sidebar";
 import { UnsavedBanner } from "./unsaved-banner";
 import { useUndo } from "./use-undo";
+import { useAuth } from "@/components/auth/auth-context";
 import { Button } from "@/components/ui/button";
 import type { ResumeData, BuilderTab, QAEntry } from "@/lib/types/resume";
 import type { Job } from "@/lib/types";
@@ -161,6 +163,8 @@ export function BuilderShell({
     [resumeData, setResumeData]
   );
 
+  const { user } = useAuth();
+
   // JD accordion state
   const [jdOpen, setJdOpen] = useState(false);
 
@@ -185,124 +189,134 @@ export function BuilderShell({
   );
 
   return (
-    <div className="flex h-screen flex-col">
-      <UnsavedBanner />
-      <BuilderHeader
-        job={job}
-        remainingMessages={initialRemaining}
-        resumeData={resumeData}
-        onExportPdf={handleExportPdf}
-        saveStatus={saveStatus}
-        jdOpen={jdOpen}
-        onToggleJd={() => setJdOpen(!jdOpen)}
-      />
-
-      <div className="flex min-h-0 flex-1">
-        {/* Left Panel: Preview or Editor */}
-        <div className="flex w-1/2 flex-col border-r">
-          <div className="flex-1 overflow-y-auto">
-            {/* Expandable Job Description — pushes content below it down */}
-            {jdOpen && (
-              <div className="border-b">
-                <JobDescriptionTab job={job} />
-              </div>
-            )}
-
-            {/* Tab bar + controls */}
-            <div className="sticky top-0 z-10 border-b bg-background px-4 pt-2">
-              <div className="flex items-center gap-2">
-                <div className="flex-1">
-                  <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
-                </div>
-                <div className="flex gap-1 pb-2">
-                  {hasPreview && (
-                    <Button
-                      variant={isEditing ? "default" : "outline"}
-                      size="sm"
-                      className="h-7 text-xs"
-                      onClick={() => setIsEditing(!isEditing)}
-                    >
-                      {isEditing ? "Done" : "Edit"}
-                    </Button>
-                  )}
-                  {isEditing && activeTab === "resume" && resumeData && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={undo}
-                        disabled={!canUndo}
-                        className="h-7 text-xs"
-                      >
-                        Undo
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={redo}
-                        disabled={!canRedo}
-                        className="h-7 text-xs"
-                      >
-                        Redo
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Tab content */}
-            {showEditor ? (
-              <>
-                {activeTab === "resume" && (
-                  <ResumeTab
-                    data={resumeData}
-                    onParsed={handleResumeParsed}
-                    onChange={setResumeData}
-                  />
-                )}
-                {activeTab === "cover-letter" && (
-                  <CoverLetterTab
-                    content={coverLetter}
-                    onChange={setCoverLetter}
-                    applicationId={applicationId}
-                    hasResume={!!resumeData}
-                  />
-                )}
-                {activeTab === "qa" && (
-                  <QATab
-                    content={qaContent}
-                    onChange={setQAContent}
-                    applicationId={applicationId}
-                    hasResume={!!resumeData}
-                  />
-                )}
-              </>
-            ) : (
-              <div className="bg-gray-100 p-6 dark:bg-gray-900/50">
-                {hasResumePreview && <ResumePreview data={resumeData!} />}
-                {hasCoverLetterPreview && (
-                  <CoverLetterPreview
-                    content={coverLetter!}
-                    contactName={resumeData?.contactInfo.name}
-                  />
-                )}
-              </div>
-            )}
-          </div>
+    <div className="flex h-screen">
+      {/* Sidebar — logged in only */}
+      {user && (
+        <div className="hidden md:flex">
+          <BuilderSidebar />
         </div>
+      )}
 
-        {/* Right Panel: Chat */}
-        <div className="flex w-1/2 flex-col">
-          <ChatPanel
-            applicationId={applicationId}
-            initialMessages={initialChatMessages}
-            initialRemaining={initialRemaining}
-            activeTab={activeTab}
-            resumeData={resumeData}
-            onSuggestionAccepted={handleSuggestionAccepted}
-            onUndo={undo}
-          />
+      <div className="flex min-w-0 flex-1 flex-col">
+        {!user && <UnsavedBanner />}
+        <BuilderHeader
+          job={job}
+          remainingMessages={initialRemaining}
+          resumeData={resumeData}
+          onExportPdf={handleExportPdf}
+          saveStatus={saveStatus}
+          jdOpen={jdOpen}
+          onToggleJd={() => setJdOpen(!jdOpen)}
+          showBreadcrumb={!user}
+        />
+
+        <div className="flex min-h-0 flex-1">
+          {/* Left Panel: Preview or Editor */}
+          <div className="flex w-1/2 flex-col border-r">
+            <div className="flex-1 overflow-y-auto">
+              {/* Expandable Job Description — pushes content below it down */}
+              {jdOpen && (
+                <div className="border-b">
+                  <JobDescriptionTab job={job} />
+                </div>
+              )}
+
+              {/* Tab bar + controls */}
+              <div className="sticky top-0 z-10 border-b bg-background px-4 pt-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
+                  </div>
+                  <div className="flex gap-1 pb-2">
+                    {hasPreview && (
+                      <Button
+                        variant={isEditing ? "default" : "outline"}
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => setIsEditing(!isEditing)}
+                      >
+                        {isEditing ? "Done" : "Edit"}
+                      </Button>
+                    )}
+                    {isEditing && activeTab === "resume" && resumeData && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={undo}
+                          disabled={!canUndo}
+                          className="h-7 text-xs"
+                        >
+                          Undo
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={redo}
+                          disabled={!canRedo}
+                          className="h-7 text-xs"
+                        >
+                          Redo
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Tab content */}
+              {showEditor ? (
+                <>
+                  {activeTab === "resume" && (
+                    <ResumeTab
+                      data={resumeData}
+                      onParsed={handleResumeParsed}
+                      onChange={setResumeData}
+                    />
+                  )}
+                  {activeTab === "cover-letter" && (
+                    <CoverLetterTab
+                      content={coverLetter}
+                      onChange={setCoverLetter}
+                      applicationId={applicationId}
+                      hasResume={!!resumeData}
+                    />
+                  )}
+                  {activeTab === "qa" && (
+                    <QATab
+                      content={qaContent}
+                      onChange={setQAContent}
+                      applicationId={applicationId}
+                      hasResume={!!resumeData}
+                    />
+                  )}
+                </>
+              ) : (
+                <div className="bg-gray-100 p-6 dark:bg-gray-900/50">
+                  {hasResumePreview && <ResumePreview data={resumeData!} />}
+                  {hasCoverLetterPreview && (
+                    <CoverLetterPreview
+                      content={coverLetter!}
+                      contactName={resumeData?.contactInfo.name}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Panel: Chat */}
+          <div className="flex w-1/2 flex-col">
+            <ChatPanel
+              applicationId={applicationId}
+              initialMessages={initialChatMessages}
+              initialRemaining={initialRemaining}
+              activeTab={activeTab}
+              resumeData={resumeData}
+              onSuggestionAccepted={handleSuggestionAccepted}
+              onUndo={undo}
+            />
+          </div>
         </div>
       </div>
     </div>
