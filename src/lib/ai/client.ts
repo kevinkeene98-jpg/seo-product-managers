@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { RESUME_PARSE_PROMPT, FIT_ASSESSMENT_PROMPT, CHAT_SYSTEM_PROMPT, COVER_LETTER_PROMPT } from "./prompts";
+import { RESUME_PARSE_PROMPT, FIT_ASSESSMENT_PROMPT, CHAT_SYSTEM_PROMPT, COVER_LETTER_PROMPT, QA_PREP_PROMPT } from "./prompts";
 import type { ResumeData, BuilderTab } from "@/lib/types/resume";
 
 let client: Anthropic | null = null;
@@ -98,6 +98,30 @@ export async function* streamCoverLetter(
       yield event.delta.text;
     }
   }
+}
+
+export async function generateQA(
+  resume: ResumeData,
+  jobTitle: string,
+  jobCompany: string,
+  jobDescription: string
+): Promise<Array<{ question: string; answer: string }>> {
+  const anthropic = getClient();
+  const response = await anthropic.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 2048,
+    system: QA_PREP_PROMPT,
+    messages: [
+      {
+        role: "user",
+        content: `## Candidate Resume\n${JSON.stringify(resume, null, 2)}\n\n## Job: ${jobTitle} at ${jobCompany}\n${jobDescription}`,
+      },
+    ],
+  });
+
+  let text = response.content[0].type === "text" ? response.content[0].text : "[]";
+  text = text.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "").trim();
+  return JSON.parse(text);
 }
 
 interface ChatContext {

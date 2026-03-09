@@ -270,7 +270,12 @@ export function BuilderShell({
                   />
                 )}
                 {activeTab === "qa" && (
-                  <QATab content={qaContent} onChange={setQAContent} />
+                  <QATab
+                    content={qaContent}
+                    onChange={setQAContent}
+                    applicationId={applicationId}
+                    hasResume={!!resumeData}
+                  />
                 )}
               </>
             ) : (
