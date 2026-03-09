@@ -75,6 +75,19 @@ export function ApplicationList({ applications: initial }: Props) {
             key={app.id}
             className="flex items-center justify-between rounded-lg border bg-background p-4"
           >
+            <div className="mr-4 hidden shrink-0 sm:block">
+              {app.companyLogoUrl ? (
+                <img
+                  src={app.companyLogoUrl}
+                  alt={app.companyName}
+                  className="h-10 w-10 rounded-lg object-contain"
+                />
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm font-bold text-muted-foreground">
+                  {app.companyName.charAt(0)}
+                </div>
+              )}
+            </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <h3 className="truncate font-semibold">{app.jobTitle}</h3>
