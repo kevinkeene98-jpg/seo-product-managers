@@ -164,7 +164,7 @@ function SortableCard({
 
 export function ApplicationList({ applications: initial }: Props) {
   const [applications, setApplications] = useState(initial);
-  const [filter, setFilter] = useState<"all" | "active" | "applied">("all");
+  const [filter, setFilter] = useState<"active" | "applied">("active");
   const [deleteTarget, setDeleteTarget] = useState<Application | null>(null);
 
   const sensors = useSensors(
@@ -172,7 +172,7 @@ export function ApplicationList({ applications: initial }: Props) {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const filtered = filter === "all" ? applications : applications.filter((a) => a.status === filter);
+  const filtered = applications.filter((a) => a.status === filter);
 
   const updateStatus = async (appId: number, status: "active" | "applied") => {
     await fetch("/api/dashboard/applications/status", {
@@ -220,7 +220,7 @@ export function ApplicationList({ applications: initial }: Props) {
     <div>
       {/* Filter tabs */}
       <div className="mb-4 flex gap-2">
-        {(["all", "active", "applied"] as const).map((f) => (
+        {(["active", "applied"] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
@@ -230,7 +230,7 @@ export function ApplicationList({ applications: initial }: Props) {
                 : "bg-muted text-muted-foreground hover:text-foreground"
             }`}
           >
-            {f} ({f === "all" ? applications.length : applications.filter((a) => a.status === f).length})
+            {f} ({applications.filter((a) => a.status === f).length})
           </button>
         ))}
       </div>
@@ -250,7 +250,7 @@ export function ApplicationList({ applications: initial }: Props) {
 
             {filtered.length === 0 && (
               <p className="py-8 text-center text-sm text-muted-foreground">
-                No {filter === "all" ? "" : filter} applications.
+                No {filter} applications.
               </p>
             )}
           </div>
