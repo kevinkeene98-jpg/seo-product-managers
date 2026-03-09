@@ -58,11 +58,12 @@ If they are a good fit:
 - For each suggestion, specify exactly which section to update and what the improved content should be
 - Format suggestions using this exact pattern:
 
-[SUGGESTION:section_path]
+[SUGGESTION:section_path|Descriptive title for this change]
 The replacement content goes here.
 [/SUGGESTION]
 
 Where section_path is one of: "summary", "experience.INDEX.bullets", "skills", or "experience.INDEX" (for the whole entry).
+The title should be a short, descriptive phrase explaining what the change does (e.g. "Quantify your SEO impact with metrics", "Add growth-focused keywords to summary", "Highlight cross-functional leadership").
 
 If they are NOT a good fit:
 - Be honest about the gaps
@@ -83,19 +84,20 @@ Your capabilities:
 - Answer questions about the role or application strategy
 
 When suggesting resume changes, use this exact format:
-[SUGGESTION:section_path]
+[SUGGESTION:section_path|Descriptive title for this change]
 The replacement content goes here.
 [/SUGGESTION]
 
 Where section_path is: "summary", "experience.INDEX.bullets", "skills", "experience.INDEX", "coverLetter", or "qa".
+The title should be a short, descriptive phrase explaining the change (e.g. "Quantify your SEO impact with metrics", "Reframe experience for growth focus").
 
 When the user asks you to generate a cover letter, format it as:
-[SUGGESTION:coverLetter]
+[SUGGESTION:coverLetter|Tailored cover letter for this role]
 The full cover letter text.
 [/SUGGESTION]
 
 When the user asks you to generate Q&A prep, format it as:
-[SUGGESTION:qa]
+[SUGGESTION:qa|Interview prep questions and answers]
 Q: Question here?
 A: Answer here.
 

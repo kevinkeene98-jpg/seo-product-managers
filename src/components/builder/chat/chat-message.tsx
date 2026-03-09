@@ -149,6 +149,7 @@ interface ParsedSegment {
   type: "text" | "suggestion";
   content: string;
   sectionPath?: string;
+  title?: string;
 }
 
 function parseMessageContent(text: string): ParsedSegment[] {
@@ -162,9 +163,15 @@ function parseMessageContent(text: string): ParsedSegment[] {
       const before = text.slice(lastIndex, match.index).trim();
       if (before) segments.push({ type: "text", content: before });
     }
+    // Parse "section_path|Title" or just "section_path"
+    const header = match[1].trim();
+    const pipeIndex = header.indexOf("|");
+    const sectionPath = pipeIndex >= 0 ? header.slice(0, pipeIndex).trim() : header;
+    const title = pipeIndex >= 0 ? header.slice(pipeIndex + 1).trim() : undefined;
     segments.push({
       type: "suggestion",
-      sectionPath: match[1].trim(),
+      sectionPath,
+      title,
       content: match[2].trim(),
     });
     lastIndex = match.index + match[0].length;
@@ -206,13 +213,14 @@ function SuggestionBlock({
   onDismiss?: () => void;
 }) {
   const [status, setStatus] = useState<"pending" | "accepted" | "dismissed">("pending");
+  const label = segment.title || formatSectionLabel(segment.sectionPath!);
 
   if (status === "dismissed") {
     return (
       <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900/30">
         <div className="flex items-center justify-between">
           <div className="text-xs text-muted-foreground">
-            <span className="font-medium">{formatSectionLabel(segment.sectionPath!)}</span>
+            <span className="font-medium text-foreground">{label}</span>
             {" "}&mdash; dismissed
           </div>
           <Button
@@ -230,8 +238,8 @@ function SuggestionBlock({
 
   return (
     <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm dark:border-blue-800 dark:bg-blue-950/30">
-      <div className="mb-1 text-xs font-medium text-blue-600 dark:text-blue-400">
-        Suggested change: {formatSectionLabel(segment.sectionPath!)}
+      <div className="mb-1 text-sm font-bold text-foreground">
+        {label}
       </div>
       <div className="max-h-32 overflow-y-auto whitespace-pre-wrap text-xs text-muted-foreground">
         {segment.content}
