@@ -143,6 +143,7 @@ interface Props {
   message: ChatMessageType;
   onAccept?: (sectionPath: string, content: string) => void;
   onDismiss?: () => void;
+  onUndo?: () => void;
 }
 
 interface ParsedSegment {
@@ -207,10 +208,12 @@ function SuggestionBlock({
   segment,
   onAccept,
   onDismiss,
+  onUndo,
 }: {
   segment: ParsedSegment;
   onAccept?: (sectionPath: string, content: string) => void;
   onDismiss?: () => void;
+  onUndo?: () => void;
 }) {
   const [status, setStatus] = useState<"pending" | "accepted" | "dismissed">("pending");
   const label = segment.title || formatSectionLabel(segment.sectionPath!);
@@ -271,15 +274,28 @@ function SuggestionBlock({
         </div>
       )}
       {status === "accepted" && (
-        <div className="mt-2 text-xs font-medium text-green-600 dark:text-green-400">
-          Applied
+        <div className="mt-2 flex items-center justify-between">
+          <span className="text-xs font-medium text-green-600 dark:text-green-400">
+            Applied
+          </span>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 text-xs text-muted-foreground"
+            onClick={() => {
+              setStatus("pending");
+              onUndo?.();
+            }}
+          >
+            Undo
+          </Button>
         </div>
       )}
     </div>
   );
 }
 
-export function ChatMessageBubble({ message, onAccept, onDismiss }: Props) {
+export function ChatMessageBubble({ message, onAccept, onDismiss, onUndo }: Props) {
   const isUser = message.role === "user";
 
   // Skip standalone suggestion-tracking messages
@@ -320,6 +336,7 @@ export function ChatMessageBubble({ message, onAccept, onDismiss }: Props) {
               segment={seg}
               onAccept={onAccept}
               onDismiss={onDismiss}
+              onUndo={onUndo}
             />
           );
         })}

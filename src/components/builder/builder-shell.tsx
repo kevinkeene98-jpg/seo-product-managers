@@ -296,6 +296,7 @@ export function BuilderShell({
             activeTab={activeTab}
             resumeData={resumeData}
             onSuggestionAccepted={handleSuggestionAccepted}
+            onUndo={undo}
           />
         </div>
       </div>

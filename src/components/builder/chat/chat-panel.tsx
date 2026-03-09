@@ -14,6 +14,7 @@ interface Props {
   activeTab: BuilderTab;
   resumeData: ResumeData | null;
   onSuggestionAccepted?: (sectionPath: string, content: unknown) => void;
+  onUndo?: () => void;
 }
 
 export function ChatPanel({
@@ -23,6 +24,7 @@ export function ChatPanel({
   activeTab,
   resumeData,
   onSuggestionAccepted,
+  onUndo,
 }: Props) {
   const {
     messages,
@@ -81,6 +83,7 @@ export function ChatPanel({
               key={msg.id || i}
               message={msg}
               onAccept={handleAccept}
+              onUndo={onUndo}
             />
           ))}
           {isLoading && messages[messages.length - 1]?.role === "user" && (
