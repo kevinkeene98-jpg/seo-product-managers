@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { BuilderHeader } from "./builder-header";
+import { BuilderSidebar } from "./builder-sidebar";
 import { TabBar } from "./tab-bar";
 import { UnsavedBanner } from "./unsaved-banner";
 import { ResumeTab } from "./tabs/resume-tab";
@@ -266,59 +267,67 @@ export function BuilderShell({
   const needsInput = activeTab === "resume" && !resumeData;
 
   return (
-    <div className="flex h-screen flex-col">
-      <BuilderHeader
-        jobId={job.id}
-        jobTitle={job.title}
-        companyName={job.companyName}
-        remainingMessages={remaining}
-        resumeData={resumeData}
-        onExportPdf={handleExportPdf}
-        saveStatus={saveStatus}
-      />
+    <div className="flex h-screen">
+      {/* Collapsible sidebar */}
+      <div className="hidden md:flex">
+        <BuilderSidebar />
+      </div>
 
-      {!user && <UnsavedBanner />}
+      {/* Main content */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <BuilderHeader
+          jobId={job.id}
+          jobTitle={job.title}
+          companyName={job.companyName}
+          remainingMessages={remaining}
+          resumeData={resumeData}
+          onExportPdf={handleExportPdf}
+          saveStatus={saveStatus}
+        />
 
-      <div className="flex min-h-0 flex-1">
-        {/* Left panel */}
-        <div className="flex min-h-0 flex-1 flex-col border-r">
-          <div className="flex items-center border-b">
-            <div className="flex-1">
-              <TabBar activeTab={activeTab} onTabChange={(tab) => { setActiveTab(tab); setEditing(false); }} />
+        {!user && <UnsavedBanner />}
+
+        <div className="flex min-h-0 flex-1">
+          {/* Left panel */}
+          <div className="flex min-h-0 flex-1 flex-col border-r">
+            <div className="flex items-center border-b">
+              <div className="flex-1">
+                <TabBar activeTab={activeTab} onTabChange={(tab) => { setActiveTab(tab); setEditing(false); }} />
+              </div>
+              {showEditToggle && !needsInput && (
+                <button
+                  onClick={() => setEditing(!editing)}
+                  className="mr-3 rounded px-3 py-1 text-sm font-medium text-primary hover:bg-muted"
+                >
+                  {editing ? "Done" : "Edit"}
+                </button>
+              )}
             </div>
-            {showEditToggle && !needsInput && (
-              <button
-                onClick={() => setEditing(!editing)}
-                className="mr-3 rounded px-3 py-1 text-sm font-medium text-primary hover:bg-muted"
-              >
-                {editing ? "Done" : "Edit"}
-              </button>
+
+            {needsInput ? (
+              <div className="flex-1 overflow-y-auto">
+                <ResumeTab
+                  data={resumeData}
+                  onParsed={handleResumeParsed}
+                  onChange={handleResumeChange}
+                />
+              </div>
+            ) : (
+              renderLeftPanel()
             )}
           </div>
 
-          {needsInput ? (
-            <div className="flex-1 overflow-y-auto">
-              <ResumeTab
-                data={resumeData}
-                onParsed={handleResumeParsed}
-                onChange={handleResumeChange}
-              />
-            </div>
-          ) : (
-            renderLeftPanel()
-          )}
-        </div>
-
-        {/* Right panel — Chat */}
-        <div className="hidden w-[380px] flex-col md:flex">
-          <ChatPanel
-            applicationId={applicationId}
-            initialMessages={initialChatMessages}
-            initialRemaining={initialRemaining}
-            activeTab={activeTab}
-            resumeData={resumeData}
-            onSuggestionAccepted={handleSuggestionAccepted}
-          />
+          {/* Right panel — Chat */}
+          <div className="hidden w-[380px] flex-col md:flex">
+            <ChatPanel
+              applicationId={applicationId}
+              initialMessages={initialChatMessages}
+              initialRemaining={initialRemaining}
+              activeTab={activeTab}
+              resumeData={resumeData}
+              onSuggestionAccepted={handleSuggestionAccepted}
+            />
+          </div>
         </div>
       </div>
     </div>
