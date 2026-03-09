@@ -40,46 +40,33 @@ export default async function JobsPage({ searchParams }: PageProps) {
 
   const result = await getActiveJobs(filters);
 
-  // Raw SQL returns snake_case columns — map them to camelCase
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const jobs: Job[] = result.jobs.map((row: any) => {
-    const j = {
-      id: row.id,
-      serpJobId: row.serp_job_id ?? row.serpJobId,
-      title: row.title,
-      companyName: row.company_name ?? row.companyName,
-      companyLogoUrl: row.company_logo_url ?? row.companyLogoUrl ?? null,
-      location: row.location,
-      workType: row.work_type ?? row.workType ?? null,
-      jobType: row.job_type ?? row.jobType ?? null,
-      experienceLevel: row.experience_level ?? row.experienceLevel ?? null,
-      salaryMin: row.salary_min ?? row.salaryMin ?? null,
-      salaryMax: row.salary_max ?? row.salaryMax ?? null,
-      salaryRaw: row.salary_raw ?? row.salaryRaw ?? null,
-      description: row.description,
-      highlights: (row.highlights ?? null) as Job["highlights"],
-      applyUrl: row.apply_url ?? row.applyUrl ?? null,
-      source: row.source ?? null,
-      postedAt: row.posted_at ?? row.postedAt,
-      status: (row.status ?? "active") as Job["status"],
-      lastSeenAt: row.last_seen_at ?? row.lastSeenAt,
-      createdAt: row.created_at ?? row.createdAt ?? null,
-      updatedAt: row.updated_at ?? row.updatedAt ?? null,
-    };
-
-    return {
-      ...j,
-      postedAt: j.postedAt ? new Date(j.postedAt).toISOString() : null,
-      lastSeenAt: new Date(j.lastSeenAt).toISOString(),
-      createdAt: j.createdAt ? new Date(j.createdAt).toISOString() : null,
-      updatedAt: j.updatedAt ? new Date(j.updatedAt).toISOString() : null,
-    };
-  });
+  // Raw SQL returns snake_case keys and plain strings (not Date objects)
+  const jobs: Job[] = result.jobs.map((j: Record<string, unknown>) => ({
+    id: j.id as number,
+    serpJobId: j.serp_job_id as string,
+    title: j.title as string,
+    companyName: j.company_name as string,
+    companyLogoUrl: (j.company_logo_url as string) ?? null,
+    location: (j.location as string) ?? null,
+    workType: j.work_type as Job["workType"],
+    jobType: j.job_type as Job["jobType"],
+    experienceLevel: j.experience_level as Job["experienceLevel"],
+    salaryMin: (j.salary_min as number) ?? null,
+    salaryMax: (j.salary_max as number) ?? null,
+    salaryRaw: (j.salary_raw as string) ?? null,
+    description: (j.description as string) ?? null,
+    highlights: j.highlights as Job["highlights"],
+    applyUrl: (j.apply_url as string) ?? null,
+    source: (j.source as string) ?? null,
+    postedAt: j.posted_at ? String(j.posted_at) : null,
+    status: j.status as Job["status"],
+    lastSeenAt: String(j.last_seen_at),
+    createdAt: j.created_at ? String(j.created_at) : null,
+    updatedAt: j.updated_at ? String(j.updated_at) : null,
+  }));
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <h1 className="mb-6 text-3xl font-bold">Browse Jobs</h1>
-
       <div className="flex flex-col gap-8 lg:flex-row">
         {/* Sticky sidebar filters */}
         <div className="w-full shrink-0 lg:w-60">
@@ -92,6 +79,7 @@ export default async function JobsPage({ searchParams }: PageProps) {
 
         {/* Job list */}
         <div className="min-w-0 flex-1">
+          <h1 className="mb-6 text-3xl font-bold">Browse Product & Growth SEO roles</h1>
           <Suspense
             fallback={
               <div className="space-y-4">

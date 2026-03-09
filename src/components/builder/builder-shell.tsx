@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { BuilderHeader } from "./builder-header";
-import { BuilderSidebar } from "./builder-sidebar";
 import { TabBar } from "./tab-bar";
-import { UnsavedBanner } from "./unsaved-banner";
 import { ResumeTab } from "./tabs/resume-tab";
 import { CoverLetterTab } from "./tabs/cover-letter-tab";
 import { QATab } from "./tabs/qa-tab";
@@ -12,11 +10,12 @@ import { JobDescriptionTab } from "./tabs/job-description-tab";
 import { ResumePreview } from "./pdf/resume-preview";
 import { CoverLetterPreview } from "./pdf/cover-letter-preview";
 import { ChatPanel } from "./chat/chat-panel";
+import { UnsavedBanner } from "./unsaved-banner";
 import { useUndo } from "./use-undo";
-import { useAuth } from "@/components/auth/auth-context";
-import type { ChatMessage } from "./chat/use-chat";
+import { Button } from "@/components/ui/button";
+import type { ResumeData, BuilderTab, QAEntry } from "@/lib/types/resume";
 import type { Job } from "@/lib/types";
-import type { ResumeData, QAEntry, BuilderTab } from "@/lib/types/resume";
+import type { ChatMessage } from "./chat/use-chat";
 
 interface Props {
   job: Job;
@@ -37,20 +36,18 @@ export function BuilderShell({
   initialChatMessages,
   initialRemaining,
 }: Props) {
-  const { user, openAuthDialog } = useAuth();
-  const hasPromptedSignIn = useRef(false);
   const [activeTab, setActiveTab] = useState<BuilderTab>("resume");
-  const [editing, setEditing] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
-  const [remaining, setRemaining] = useState(initialRemaining);
-
   const {
     state: resumeData,
     set: setResumeData,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   } = useUndo<ResumeData | null>(initialResumeData);
   const [coverLetter, setCoverLetter] = useState<string | null>(initialCoverLetter);
-  const [qa, setQA] = useState<QAEntry[] | null>(initialQA);
-
+  const [qaContent, setQAContent] = useState<QAEntry[] | null>(initialQA);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Debounced auto-save
@@ -64,6 +61,7 @@ export function BuilderShell({
           body: JSON.stringify({ applicationId, field, content }),
         });
         setSaveStatus("saved");
+        setTimeout(() => setSaveStatus("idle"), 2000);
       } catch {
         setSaveStatus("idle");
       }
@@ -74,260 +72,219 @@ export function BuilderShell({
   const debouncedSave = useCallback(
     (field: string, content: unknown) => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-      saveTimerRef.current = setTimeout(() => save(field, content), 1000);
+      saveTimerRef.current = setTimeout(() => save(field, content), 500);
     },
     [save]
   );
 
-  // Resume change handler
-  const handleResumeChange = useCallback(
-    (data: ResumeData) => {
-      setResumeData(data);
-      debouncedSave("resumeContent", data);
-    },
-    [setResumeData, debouncedSave]
-  );
+  // Auto-save on changes
+  useEffect(() => {
+    if (resumeData && resumeData !== initialResumeData) {
+      debouncedSave("resumeContent", resumeData);
+    }
+  }, [resumeData, debouncedSave, initialResumeData]);
+
+  useEffect(() => {
+    if (coverLetter !== initialCoverLetter) {
+      debouncedSave("coverLetterContent", coverLetter);
+    }
+  }, [coverLetter, debouncedSave, initialCoverLetter]);
+
+  useEffect(() => {
+    if (qaContent !== initialQA) {
+      debouncedSave("qaContent", qaContent);
+    }
+  }, [qaContent, debouncedSave, initialQA]);
 
   const handleResumeParsed = useCallback(
     (data: ResumeData) => {
       setResumeData(data);
       save("resumeContent", data);
-      // Prompt anonymous users to sign in after parsing resume
-      if (!user && !hasPromptedSignIn.current) {
-        hasPromptedSignIn.current = true;
-        setTimeout(() => {
-          openAuthDialog("Sign in to save your resume and track applications");
-        }, 2000);
-      }
     },
-    [setResumeData, save, user, openAuthDialog]
+    [setResumeData, save]
   );
 
-  // Cover letter change handler
-  const handleCoverLetterChange = useCallback(
-    (content: string) => {
-      setCoverLetter(content);
-      debouncedSave("coverLetterContent", content);
-    },
-    [debouncedSave]
-  );
-
-  // QA change handler
-  const handleQAChange = useCallback(
-    (content: QAEntry[]) => {
-      setQA(content);
-      debouncedSave("qaContent", content);
-    },
-    [debouncedSave]
-  );
-
-  // Handle suggestion acceptance from chat
-  const handleSuggestionAccepted = useCallback(
-    (sectionPath: string, content: unknown) => {
-      if (sectionPath === "coverLetter" && typeof content === "string") {
-        setCoverLetter(content);
-        save("coverLetterContent", content);
-        return;
-      }
-
-      if (sectionPath === "qa" && Array.isArray(content)) {
-        setQA(content as QAEntry[]);
-        save("qaContent", content);
-        return;
-      }
-
-      if (!resumeData) return;
-
-      // Apply to resume data
-      const updated = { ...resumeData };
-      if (sectionPath === "summary" && typeof content === "string") {
-        updated.summary = content;
-      } else if (sectionPath === "skills" && typeof content === "string") {
-        updated.skills = content.split(",").map((s) => s.trim());
-      } else if (sectionPath.startsWith("experience.")) {
-        const parts = sectionPath.split(".");
-        const index = parseInt(parts[1], 10);
-        if (parts[2] === "bullets" && typeof content === "string") {
-          const experience = [...updated.experience];
-          experience[index] = {
-            ...experience[index],
-            bullets: content.split("\n").filter(Boolean),
-          };
-          updated.experience = experience;
-        }
-      }
-
-      setResumeData(updated);
-      save("resumeContent", updated);
-    },
-    [resumeData, setResumeData, save]
-  );
-
-  // Export PDF
   const handleExportPdf = useCallback(async () => {
     if (!resumeData) return;
     const { exportResumePdf } = await import("./pdf/export-pdf");
     await exportResumePdf(resumeData);
   }, [resumeData]);
 
-  // Clear save timer on unmount
-  useEffect(() => {
-    return () => {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    };
-  }, []);
+  // Handle suggestion acceptance from chat
+  const handleSuggestionAccepted = useCallback(
+    (sectionPath: string, content: unknown) => {
+      if (sectionPath === "coverLetter") {
+        setCoverLetter(content as string);
+        setActiveTab("cover-letter");
+        return;
+      }
+      if (sectionPath === "qa") {
+        // Parse Q&A format
+        const text = content as string;
+        const pairs: QAEntry[] = [];
+        const qRegex = /Q:\s*(.*?)(?:\n|$)\s*A:\s*([\s\S]*?)(?=\nQ:|$)/g;
+        let match;
+        while ((match = qRegex.exec(text)) !== null) {
+          pairs.push({ question: match[1].trim(), answer: match[2].trim() });
+        }
+        if (pairs.length > 0) {
+          setQAContent(pairs);
+          setActiveTab("qa");
+        }
+        return;
+      }
+      if (!resumeData) return;
 
-  // Determine what to show on left panel
-  const renderLeftPanel = () => {
-    if (activeTab === "job-description") {
-      return (
-        <div className="flex-1 overflow-y-auto">
-          <JobDescriptionTab job={job} />
-        </div>
-      );
-    }
+      // Handle resume section suggestions
+      if (sectionPath === "summary") {
+        setResumeData({ ...resumeData, summary: content as string });
+      } else if (sectionPath === "skills") {
+        const skills = typeof content === "string"
+          ? content.split(",").map((s) => s.trim()).filter(Boolean)
+          : (content as string[]);
+        setResumeData({ ...resumeData, skills });
+      } else if (sectionPath.startsWith("experience.")) {
+        const parts = sectionPath.split(".");
+        const index = parseInt(parts[1], 10);
+        if (isNaN(index) || index >= resumeData.experience.length) return;
 
-    if (editing) {
-      // Show editor
-      return (
-        <div className="flex-1 overflow-y-auto">
-          {activeTab === "resume" && (
-            <ResumeTab
-              data={resumeData}
-              onParsed={handleResumeParsed}
-              onChange={handleResumeChange}
-            />
-          )}
-          {activeTab === "cover-letter" && (
-            <CoverLetterTab
-              content={coverLetter}
-              onChange={handleCoverLetterChange}
-            />
-          )}
-          {activeTab === "qa" && (
-            <QATab content={qa} onChange={handleQAChange} />
-          )}
-        </div>
-      );
-    }
+        if (parts[2] === "bullets") {
+          const bullets = typeof content === "string"
+            ? content.split("\n").filter(Boolean)
+            : (content as string[]);
+          const exp = [...resumeData.experience];
+          exp[index] = { ...exp[index], bullets };
+          setResumeData({ ...resumeData, experience: exp });
+        }
+      }
+    },
+    [resumeData, setResumeData]
+  );
 
-    // Show preview
-    return (
-      <div className="flex-1 overflow-y-auto bg-gray-100 p-4">
-        {activeTab === "resume" && resumeData && (
-          <ResumePreview data={resumeData} />
-        )}
-        {activeTab === "resume" && !resumeData && (
-          <div className="flex h-full items-center justify-center">
-            <div className="text-center text-muted-foreground">
-              <p className="text-lg font-medium">No resume yet</p>
-              <p className="text-sm">Click Edit to upload or paste your resume.</p>
-            </div>
-          </div>
-        )}
-        {activeTab === "cover-letter" && coverLetter && (
-          <CoverLetterPreview content={coverLetter} />
-        )}
-        {activeTab === "cover-letter" && !coverLetter && (
-          <div className="flex h-full items-center justify-center">
-            <div className="text-center text-muted-foreground">
-              <p className="text-lg font-medium">No cover letter yet</p>
-              <p className="text-sm">
-                Ask the AI assistant to write one, or click Edit.
-              </p>
-            </div>
-          </div>
-        )}
-        {activeTab === "qa" && qa && qa.length > 0 && (
-          <div className="mx-auto max-w-2xl space-y-4 bg-white p-6 shadow-md">
-            {qa.map((entry, i) => (
-              <div key={i}>
-                <p className="font-semibold">Q: {entry.question}</p>
-                <p className="text-muted-foreground">A: {entry.answer}</p>
-              </div>
-            ))}
-          </div>
-        )}
-        {activeTab === "qa" && (!qa || qa.length === 0) && (
-          <div className="flex h-full items-center justify-center">
-            <div className="text-center text-muted-foreground">
-              <p className="text-lg font-medium">No Q&A prep yet</p>
-              <p className="text-sm">
-                Ask the AI assistant to generate interview questions.
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
+  // Editing mode: when true, left panel shows editor; when false, shows preview
+  const [isEditing, setIsEditing] = useState(false);
 
-  const showEditToggle = activeTab !== "job-description";
-  // For resume tab, only show edit if resume exists (upload step is always edit mode)
-  const needsInput = activeTab === "resume" && !resumeData;
+  // Determine if the current tab has previewable content
+  const hasResumePreview = activeTab === "resume" && resumeData;
+  const hasCoverLetterPreview = activeTab === "cover-letter" && coverLetter;
+  const hasPreview = hasResumePreview || hasCoverLetterPreview;
+
+  // For tabs without preview (Q&A, Job Description, or no content yet), always show the content directly
+  const showEditor = !hasPreview || isEditing;
+
+  // Reset editing mode when switching tabs
+  const handleTabChange = useCallback(
+    (tab: BuilderTab) => {
+      setActiveTab(tab);
+      setIsEditing(false);
+    },
+    []
+  );
 
   return (
-    <div className="flex h-screen">
-      {/* Collapsible sidebar */}
-      <div className="hidden md:flex">
-        <BuilderSidebar />
-      </div>
+    <div className="flex h-screen flex-col">
+      <UnsavedBanner />
+      <BuilderHeader
+        jobId={job.id}
+        jobTitle={job.title}
+        companyName={job.companyName}
+        remainingMessages={initialRemaining}
+        resumeData={resumeData}
+        onExportPdf={handleExportPdf}
+        saveStatus={saveStatus}
+      />
 
-      {/* Main content */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        <BuilderHeader
-          jobId={job.id}
-          jobTitle={job.title}
-          companyName={job.companyName}
-          remainingMessages={remaining}
-          resumeData={resumeData}
-          onExportPdf={handleExportPdf}
-          saveStatus={saveStatus}
-        />
-
-        {!user && <UnsavedBanner />}
-
-        <div className="flex min-h-0 flex-1">
-          {/* Left panel */}
-          <div className="flex min-h-0 flex-1 flex-col border-r">
-            <div className="flex items-center border-b">
+      <div className="flex min-h-0 flex-1">
+        {/* Left Panel: Preview or Editor */}
+        <div className="flex w-1/2 flex-col border-r">
+          <div className="border-b px-4 pt-2">
+            <div className="flex items-center gap-2">
               <div className="flex-1">
-                <TabBar activeTab={activeTab} onTabChange={(tab) => { setActiveTab(tab); setEditing(false); }} />
+                <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
               </div>
-              {showEditToggle && !needsInput && (
-                <button
-                  onClick={() => setEditing(!editing)}
-                  className="mr-3 rounded px-3 py-1 text-sm font-medium text-primary hover:bg-muted"
-                >
-                  {editing ? "Done" : "Edit"}
-                </button>
-              )}
+              <div className="flex gap-1 pb-2">
+                {/* Edit / Done toggle */}
+                {hasPreview && (
+                  <Button
+                    variant={isEditing ? "default" : "outline"}
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => setIsEditing(!isEditing)}
+                  >
+                    {isEditing ? "Done" : "Edit"}
+                  </Button>
+                )}
+                {/* Undo / Redo (only in edit mode on resume tab) */}
+                {isEditing && activeTab === "resume" && resumeData && (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={undo}
+                      disabled={!canUndo}
+                      className="h-7 text-xs"
+                    >
+                      Undo
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={redo}
+                      disabled={!canRedo}
+                      className="h-7 text-xs"
+                    >
+                      Redo
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
+          </div>
 
-            {needsInput ? (
-              <div className="flex-1 overflow-y-auto">
-                <ResumeTab
-                  data={resumeData}
-                  onParsed={handleResumeParsed}
-                  onChange={handleResumeChange}
-                />
-              </div>
+          <div className="flex-1 overflow-y-auto">
+            {showEditor ? (
+              <>
+                {activeTab === "resume" && (
+                  <ResumeTab
+                    data={resumeData}
+                    onParsed={handleResumeParsed}
+                    onChange={setResumeData}
+                  />
+                )}
+                {activeTab === "cover-letter" && (
+                  <CoverLetterTab content={coverLetter} onChange={setCoverLetter} />
+                )}
+                {activeTab === "qa" && (
+                  <QATab content={qaContent} onChange={setQAContent} />
+                )}
+                {activeTab === "job-description" && (
+                  <JobDescriptionTab job={job} />
+                )}
+              </>
             ) : (
-              renderLeftPanel()
+              <div className="overflow-y-auto bg-gray-100 p-6 dark:bg-gray-900/50">
+                {hasResumePreview && <ResumePreview data={resumeData!} />}
+                {hasCoverLetterPreview && (
+                  <CoverLetterPreview
+                    content={coverLetter!}
+                    contactName={resumeData?.contactInfo.name}
+                  />
+                )}
+              </div>
             )}
           </div>
+        </div>
 
-          {/* Right panel — Chat */}
-          <div className="hidden w-[380px] flex-col md:flex">
-            <ChatPanel
-              applicationId={applicationId}
-              initialMessages={initialChatMessages}
-              initialRemaining={initialRemaining}
-              activeTab={activeTab}
-              resumeData={resumeData}
-              onSuggestionAccepted={handleSuggestionAccepted}
-            />
-          </div>
+        {/* Right Panel: Chat */}
+        <div className="flex w-1/2 flex-col">
+          <ChatPanel
+            applicationId={applicationId}
+            initialMessages={initialChatMessages}
+            initialRemaining={initialRemaining}
+            activeTab={activeTab}
+            resumeData={resumeData}
+            onSuggestionAccepted={handleSuggestionAccepted}
+          />
         </div>
       </div>
     </div>

@@ -74,21 +74,9 @@ export function JobCard({ job }: JobCardProps) {
                 salaryMin={job.salaryMin}
                 salaryMax={job.salaryMax}
               />
-              <div className="flex gap-2">
-                {job.applyUrl && (
-                  <a
-                    href={job.applyUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-                  >
-                    View Posting
-                  </a>
-                )}
-                <Link href={`/builder/${job.id}`} className={cn(buttonVariants({ variant: "default", size: "sm" }))}>
-                  Build Resume
-                </Link>
-              </div>
+              <Link href={`/builder/${job.id}`} className={cn(buttonVariants({ variant: "default", size: "sm" }))}>
+                Build Resume
+              </Link>
             </div>
           </div>
         </div>

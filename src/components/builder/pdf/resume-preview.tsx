@@ -1,142 +1,115 @@
 "use client";
 
+import { PageLayout } from "./page-layout";
 import type { ResumeData } from "@/lib/types/resume";
-
-function PageLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      className="mx-auto bg-white shadow-md"
-      style={{
-        width: "8.5in",
-        minHeight: "11in",
-        padding: "0.5in",
-        fontFamily: "Georgia, serif",
-        fontSize: "10pt",
-        lineHeight: 1.4,
-        color: "#222",
-      }}
-    >
-      {children}
-    </div>
-  );
-}
 
 interface Props {
   data: ResumeData;
 }
 
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="mb-2 mt-3 border-b border-gray-800 pb-0.5 text-xs font-bold uppercase tracking-wider">
+      {children}
+    </h2>
+  );
+}
+
 export function ResumePreview({ data }: Props) {
   return (
-    <PageLayout>
-      {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: 16 }}>
-        <h1 style={{ fontSize: "20pt", fontWeight: "bold", margin: 0 }}>
-          {data.contactInfo.name}
-        </h1>
-        <p style={{ fontSize: "9pt", color: "#555", margin: "4px 0 0" }}>
-          {[
-            data.contactInfo.email,
-            data.contactInfo.phone,
-            data.contactInfo.location,
-            data.contactInfo.linkedin,
-            data.contactInfo.portfolio,
-          ]
-            .filter(Boolean)
-            .join(" | ")}
-        </p>
+    <PageLayout name={data.contactInfo.name}>
+      {/* Contact Info */}
+      <div>
+        <h1 className="mb-1 text-xl font-bold">{data.contactInfo.name}</h1>
+        <div className="mb-4 flex flex-wrap gap-2 text-[9px] text-gray-500">
+          {data.contactInfo.email && <span>{data.contactInfo.email}</span>}
+          {data.contactInfo.phone && <span>{data.contactInfo.phone}</span>}
+          {data.contactInfo.location && <span>{data.contactInfo.location}</span>}
+          {data.contactInfo.linkedin && <span>{data.contactInfo.linkedin}</span>}
+          {data.contactInfo.portfolio && <span>{data.contactInfo.portfolio}</span>}
+        </div>
       </div>
 
       {/* Summary */}
       {data.summary && (
-        <section style={{ marginBottom: 12 }}>
-          <h2 style={sectionTitleStyle}>Summary</h2>
-          <p style={{ margin: 0 }}>{data.summary}</p>
-        </section>
+        <div>
+          <SectionHeading>Summary</SectionHeading>
+          <p className="mb-1">{data.summary}</p>
+        </div>
       )}
 
       {/* Experience */}
       {data.experience.length > 0 && (
-        <section style={{ marginBottom: 12 }}>
-          <h2 style={sectionTitleStyle}>Experience</h2>
+        <div>
+          <SectionHeading>Experience</SectionHeading>
           {data.experience.map((exp) => (
-            <div key={exp.id} style={{ marginBottom: 8 }}>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <strong>
+            <div key={exp.id} className="mb-2">
+              <div className="flex items-start justify-between">
+                <span className="font-bold">
                   {exp.title} — {exp.company}
-                </strong>
-                <span style={{ fontSize: "9pt", color: "#555" }}>
+                </span>
+                <span className="shrink-0 text-[9px] text-gray-500">
                   {exp.startDate} – {exp.endDate}
                 </span>
               </div>
               {exp.location && (
-                <div style={{ fontSize: "9pt", color: "#555" }}>{exp.location}</div>
+                <div className="text-[9px] text-gray-500">{exp.location}</div>
               )}
-              <ul style={{ margin: "4px 0 0", paddingLeft: 16 }}>
+              <ul className="mt-0.5 space-y-0.5 pl-2">
                 {exp.bullets.map((bullet, i) => (
-                  <li key={i} style={{ marginBottom: 2 }}>
-                    {bullet}
+                  <li key={i} className="flex gap-1.5">
+                    <span className="shrink-0">•</span>
+                    <span>{bullet}</span>
                   </li>
                 ))}
               </ul>
             </div>
           ))}
-        </section>
+        </div>
       )}
 
       {/* Education */}
       {data.education.length > 0 && (
-        <section style={{ marginBottom: 12 }}>
-          <h2 style={sectionTitleStyle}>Education</h2>
+        <div>
+          <SectionHeading>Education</SectionHeading>
           {data.education.map((edu) => (
-            <div key={edu.id} style={{ marginBottom: 6 }}>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <strong>{edu.degree}</strong>
-                <span style={{ fontSize: "9pt", color: "#555" }}>{edu.graduationDate}</span>
+            <div key={edu.id} className="mb-1.5">
+              <div className="flex items-start justify-between">
+                <span className="font-bold">{edu.degree}</span>
+                <span className="text-[9px] text-gray-500">{edu.graduationDate}</span>
               </div>
-              <div style={{ fontSize: "9pt", color: "#555" }}>
+              <div className="text-[9px] text-gray-500">
                 {edu.institution}
                 {edu.gpa ? ` — GPA: ${edu.gpa}` : ""}
               </div>
             </div>
           ))}
-        </section>
+        </div>
       )}
 
       {/* Skills */}
       {data.skills.length > 0 && (
-        <section style={{ marginBottom: 12 }}>
-          <h2 style={sectionTitleStyle}>Skills</h2>
-          <p style={{ margin: 0 }}>{data.skills.join(" • ")}</p>
-        </section>
+        <div>
+          <SectionHeading>Skills</SectionHeading>
+          <p>{data.skills.join(" • ")}</p>
+        </div>
       )}
 
       {/* Certifications */}
       {data.certifications && data.certifications.length > 0 && (
-        <section>
-          <h2 style={sectionTitleStyle}>Certifications</h2>
+        <div>
+          <SectionHeading>Certifications</SectionHeading>
           {data.certifications.map((cert) => (
-            <div key={cert.id} style={{ marginBottom: 4 }}>
-              <strong>{cert.name}</strong>
-              <span style={{ fontSize: "9pt", color: "#555" }}>
-                {" "}
-                — {cert.issuer}
-                {cert.date ? `, ${cert.date}` : ""}
-              </span>
+            <div key={cert.id} className="mb-1">
+              <span className="font-bold">{cert.name}</span>
+              <div className="text-[9px] text-gray-500">
+                {cert.issuer}
+                {cert.date ? ` — ${cert.date}` : ""}
+              </div>
             </div>
           ))}
-        </section>
+        </div>
       )}
     </PageLayout>
   );
 }
-
-const sectionTitleStyle: React.CSSProperties = {
-  fontSize: "12pt",
-  fontWeight: "bold",
-  textTransform: "uppercase",
-  letterSpacing: 0.5,
-  borderBottom: "1px solid #333",
-  paddingBottom: 2,
-  marginBottom: 8,
-  marginTop: 0,
-};
