@@ -63,7 +63,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Job not found" }, { status: 404 });
   }
 
-  const resumeData = app.resumeContent as ResumeData | null;
+  // Fall back to resumes table if application doesn't have resume content yet
+  let resumeData = app.resumeContent as ResumeData | null;
+  if (!resumeData) {
+    const { resumes } = await import("@/db/schema");
+    const [resume] = await db
+      .select()
+      .from(resumes)
+      .where(eq(resumes.sessionId, sessionId))
+      .limit(1);
+    if (resume?.parsedContent) {
+      resumeData = resume.parsedContent as ResumeData;
+    }
+  }
 
   // Get existing messages
   const existingMessages = await getChatMessages(applicationId);
