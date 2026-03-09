@@ -57,9 +57,8 @@ export function ChatPanel({
     }
   }, [resumeData, initialMessages.length, sendMessage, activeTab]);
 
-  const handleAccept = async (messageId: number, sectionPath: string, content: string) => {
+  const handleAccept = (sectionPath: string, content: string) => {
     onSuggestionAccepted?.(sectionPath, content);
-    await acceptSuggestion(messageId);
   };
 
   return (
@@ -82,7 +81,6 @@ export function ChatPanel({
               key={msg.id || i}
               message={msg}
               onAccept={handleAccept}
-              onDismiss={dismissSuggestion}
             />
           ))}
           {isLoading && messages[messages.length - 1]?.role === "user" && (
