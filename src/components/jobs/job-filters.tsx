@@ -149,6 +149,18 @@ export function JobFilters() {
         />
       </div>
 
+      {/* Salary Max */}
+      <div>
+        <label className="mb-1.5 block text-sm font-medium">Max Salary</label>
+        <Input
+          type="number"
+          placeholder="e.g. 300000"
+          className="w-full"
+          value={searchParams.get("salary_max") || ""}
+          onChange={(e) => updateFilter("salary_max", e.target.value)}
+        />
+      </div>
+
       <Separator />
 
       {/* New Only */}

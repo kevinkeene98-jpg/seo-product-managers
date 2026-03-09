@@ -6,6 +6,16 @@ import type { JobsQuery } from "@/lib/validators/jobs";
 export async function getActiveJobs(filters: JobsQuery) {
   const conditions: SQL[] = [eq(jobs.status, "active")];
 
+  // Only show jobs mentioning SEO (word boundary) or "search engine optimization"
+  conditions.push(
+    or(
+      sql`${jobs.title} ~* '\\yseo\\y'`,
+      sql`${jobs.description} ~* '\\yseo\\y'`,
+      ilike(jobs.title, "%search engine optimization%"),
+      ilike(jobs.description, "%search engine optimization%")
+    )!
+  );
+
   // Keyword search (title, company name, description)
   if (filters.q) {
     const term = `%${filters.q}%`;
@@ -94,11 +104,14 @@ export async function getActiveJobs(filters: JobsQuery) {
   };
 }
 
-export async function getJobById(id: number) {
+export async function getJobById(id: number, activeOnly = true) {
+  const conditions = [eq(jobs.id, id)];
+  if (activeOnly) conditions.push(eq(jobs.status, "active"));
+
   const [job] = await db
     .select()
     .from(jobs)
-    .where(and(eq(jobs.id, id), eq(jobs.status, "active")));
+    .where(and(...conditions));
 
   return job || null;
 }

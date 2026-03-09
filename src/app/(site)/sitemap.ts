@@ -2,17 +2,18 @@ import { MetadataRoute } from "next";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { jobs } from "@/db/schema";
+import { jobUrl } from "@/lib/format";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://seoproductmanagers.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const activeJobs = await db
-    .select({ id: jobs.id, updatedAt: jobs.updatedAt })
+    .select({ id: jobs.id, title: jobs.title, companyName: jobs.companyName, updatedAt: jobs.updatedAt })
     .from(jobs)
     .where(eq(jobs.status, "active"));
 
   const jobEntries: MetadataRoute.Sitemap = activeJobs.map((job) => ({
-    url: `${BASE_URL}/jobs/${job.id}`,
+    url: `${BASE_URL}${jobUrl(job)}`,
     lastModified: job.updatedAt ?? new Date(),
     changeFrequency: "daily",
     priority: 0.8,

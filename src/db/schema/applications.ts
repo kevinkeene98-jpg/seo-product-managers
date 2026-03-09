@@ -21,9 +21,8 @@ export const applications = pgTable(
   "applications",
   {
     id: serial("id").primaryKey(),
-    userId: integer("user_id")
-      .references(() => users.id)
-      .notNull(),
+    userId: integer("user_id").references(() => users.id),
+    sessionId: text("session_id"),
     jobId: integer("job_id")
       .references(() => jobs.id)
       .notNull(),
@@ -36,5 +35,8 @@ export const applications = pgTable(
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
   },
-  (table) => [unique("applications_user_job_unique").on(table.userId, table.jobId)]
+  (table) => [
+    unique("applications_user_job_unique").on(table.userId, table.jobId),
+    unique("applications_session_job_unique").on(table.sessionId, table.jobId),
+  ]
 );

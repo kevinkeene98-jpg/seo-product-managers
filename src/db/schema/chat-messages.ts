@@ -5,6 +5,7 @@ import {
   text,
   integer,
   timestamp,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { applications } from "./applications";
 
@@ -18,5 +19,8 @@ export const chatMessages = pgTable("chat_messages", {
   role: chatRoleEnum("role").notNull(),
   content: text("content").notNull(),
   activeTab: text("active_tab"),
+  targetSection: text("target_section"),
+  suggestionStatus: text("suggestion_status"),
+  suggestedContent: jsonb("suggested_content"),
   createdAt: timestamp("created_at").defaultNow(),
 });

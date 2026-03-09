@@ -5,9 +5,11 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
+import { useAuth } from "@/components/auth/auth-context";
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const { user, isLoading, openAuthDialog, signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -24,9 +26,36 @@ export function Header() {
           >
             Browse Jobs
           </Link>
-          <Link href="/auth/signin" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
-            Sign In
-          </Link>
+          {!isLoading && (
+            user ? (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/dashboard"
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Dashboard
+                </Link>
+                <span className="text-sm text-muted-foreground">
+                  {user.name || user.email}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => signOut()}
+                >
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => openAuthDialog()}
+              >
+                Sign In
+              </Button>
+            )
+          )}
         </nav>
 
         {/* Mobile nav */}
@@ -56,13 +85,35 @@ export function Header() {
               >
                 Browse Jobs
               </Link>
-              <Link
-                href="/auth/signin"
-                className="text-lg font-medium"
-                onClick={() => setOpen(false)}
-              >
-                Sign In
-              </Link>
+              {!isLoading && (
+                user ? (
+                  <>
+                    <Link
+                      href="/dashboard"
+                      className="text-lg font-medium"
+                      onClick={() => setOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                    <span className="text-sm text-muted-foreground">
+                      {user.name || user.email}
+                    </span>
+                    <button
+                      className="text-lg font-medium text-left"
+                      onClick={() => { signOut(); setOpen(false); }}
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    className="text-lg font-medium text-left"
+                    onClick={() => { openAuthDialog(); setOpen(false); }}
+                  >
+                    Sign In
+                  </button>
+                )
+              )}
             </nav>
           </SheetContent>
         </Sheet>

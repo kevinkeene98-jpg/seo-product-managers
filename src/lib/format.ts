@@ -1,3 +1,15 @@
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export function jobUrl(job: { id: number; companyName: string; title: string }): string {
+  return `/jobs/${slugify(job.companyName)}/${job.id}/${slugify(job.title)}`;
+}
+
 export function formatSalary(
   min: number | null,
   max: number | null

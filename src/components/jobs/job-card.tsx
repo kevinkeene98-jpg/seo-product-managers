@@ -7,7 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { NewBadge } from "./new-badge";
 import { SalaryBadge } from "./salary-badge";
-import { isNewJob, formatWorkType, formatExperience, formatJobType } from "@/lib/format";
+import { isNewJob, formatWorkType, formatExperience, formatJobType, jobUrl } from "@/lib/format";
 import type { Job } from "@/lib/types";
 
 interface JobCardProps {
@@ -39,7 +39,7 @@ export function JobCard({ job }: JobCardProps) {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <Link
-                  href={`/jobs/${job.id}`}
+                  href={jobUrl(job)}
                   className="text-lg font-semibold hover:underline"
                 >
                   {job.title}
