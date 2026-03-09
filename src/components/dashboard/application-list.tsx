@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatSalary } from "@/lib/format";
-import { jobUrl } from "@/lib/format";
 import { useState } from "react";
 
 interface Application {
@@ -29,16 +28,16 @@ interface Props {
 const statusColors: Record<string, string> = {
   active: "bg-blue-100 text-blue-700",
   applied: "bg-green-100 text-green-700",
-  archived: "bg-gray-100 text-gray-600",
 };
 
 export function ApplicationList({ applications: initial }: Props) {
   const [applications, setApplications] = useState(initial);
-  const [filter, setFilter] = useState<"all" | "active" | "applied" | "archived">("all");
+  const [filter, setFilter] = useState<"all" | "active" | "applied">("all");
+  const [deleteTarget, setDeleteTarget] = useState<Application | null>(null);
 
   const filtered = filter === "all" ? applications : applications.filter((a) => a.status === filter);
 
-  const updateStatus = async (appId: number, status: "active" | "applied" | "archived") => {
+  const updateStatus = async (appId: number, status: "active" | "applied") => {
     await fetch("/api/dashboard/applications/status", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -49,11 +48,21 @@ export function ApplicationList({ applications: initial }: Props) {
     );
   };
 
+  const deleteApplication = async (appId: number) => {
+    await fetch("/api/dashboard/applications/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ applicationId: appId }),
+    });
+    setApplications((prev) => prev.filter((a) => a.id !== appId));
+    setDeleteTarget(null);
+  };
+
   return (
     <div>
       {/* Filter tabs */}
       <div className="mb-4 flex gap-2">
-        {(["all", "active", "applied", "archived"] as const).map((f) => (
+        {(["all", "active", "applied"] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
@@ -91,7 +100,7 @@ export function ApplicationList({ applications: initial }: Props) {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <h3 className="truncate font-semibold">{app.jobTitle}</h3>
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[app.status]}`}>
+                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[app.status] || ""}`}>
                   {app.status}
                 </span>
               </div>
@@ -123,20 +132,19 @@ export function ApplicationList({ applications: initial }: Props) {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => updateStatus(app.id, "archived")}
-                >
-                  Archive
-                </Button>
-              )}
-              {app.status === "archived" && (
-                <Button
-                  size="sm"
-                  variant="outline"
                   onClick={() => updateStatus(app.id, "active")}
                 >
-                  Reactivate
+                  Mark Active
                 </Button>
               )}
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-red-500 hover:bg-red-50 hover:text-red-600"
+                onClick={() => setDeleteTarget(app)}
+              >
+                Delete
+              </Button>
               <Link href={`/builder/${app.jobId}`}>
                 <Button size="sm">Continue</Button>
               </Link>
@@ -150,6 +158,37 @@ export function ApplicationList({ applications: initial }: Props) {
           </p>
         )}
       </div>
+
+      {/* Delete confirmation modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="mx-4 w-full max-w-sm rounded-lg bg-background p-6 shadow-lg">
+            <h3 className="text-lg font-semibold">Delete Application</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Are you sure you want to delete your application for{" "}
+              <strong>{deleteTarget.jobTitle}</strong> at{" "}
+              <strong>{deleteTarget.companyName}</strong>? This will permanently
+              remove your resume, cover letter, and chat history for this job.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDeleteTarget(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => deleteApplication(deleteTarget.id)}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
