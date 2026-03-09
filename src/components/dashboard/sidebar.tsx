@@ -10,7 +10,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const navItems = [
   { href: "/dashboard", label: "Applications", icon: "📋" },
-  { href: "/dashboard/recommended", label: "Recommended Jobs", icon: "⭐" },
   { href: "/dashboard/settings", label: "Settings", icon: "⚙️" },
 ];
 
