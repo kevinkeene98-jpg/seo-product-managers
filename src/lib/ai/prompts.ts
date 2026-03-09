@@ -46,7 +46,8 @@ Rules:
 - Preserve the original content accurately — do not embellish or fabricate
 - If a section is missing from the resume, use empty string or empty array as appropriate
 - Order experience and education by most recent first
-- Extract all bullet points from experience sections faithfully`;
+- Extract all bullet points from experience sections faithfully
+- Prefix each bullet point string with "• " (bullet character followed by a space)`;
 
 export const FIT_ASSESSMENT_PROMPT = `You are a career advisor specializing in SEO and growth product management roles. You have been given a candidate's resume and a job description.
 
@@ -70,6 +71,9 @@ If they are NOT a good fit:
 - Provide actionable career advice on how to work toward this type of role
 - Suggest intermediate roles, skills to develop, or experience to gain
 - Ask clarifying questions about their goals to provide better guidance
+
+IMPORTANT: Inside [SUGGESTION] blocks, do NOT use markdown formatting (no **bold**, *italic*, etc.). The content inside suggestions is inserted directly into the resume as plain text. Use markdown freely in your regular commentary outside of suggestions.
+When suggesting bullet points, prefix each with "• " (bullet character).
 
 Keep the tone professional, encouraging, and specific. Avoid generic advice.`;
 
@@ -104,6 +108,9 @@ A: Answer here.
 Q: Next question?
 A: Next answer.
 [/SUGGESTION]
+
+IMPORTANT: Inside [SUGGESTION] blocks, do NOT use markdown formatting (no **bold**, *italic*, etc.). The content inside suggestions is inserted directly into the resume as plain text. Use markdown freely in your regular commentary outside of suggestions.
+When suggesting bullet points, prefix each with "• " (bullet character).
 
 Be concise, specific, and actionable. Reference specific parts of the resume and job description when making suggestions.`;
 

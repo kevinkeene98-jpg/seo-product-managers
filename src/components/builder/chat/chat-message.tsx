@@ -4,6 +4,15 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { ChatMessage as ChatMessageType } from "./use-chat";
 
+/** Strip markdown formatting from text (for inserting into resume fields) */
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, "$1")  // **bold**
+    .replace(/\*(.+?)\*/g, "$1")       // *italic*
+    .replace(/`(.+?)`/g, "$1")         // `code`
+    .replace(/^#{1,4}\s+/gm, "");      // headings
+}
+
 /** Render inline markdown: **bold**, *italic*, `code` */
 function renderInline(text: string): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
@@ -255,7 +264,7 @@ function SuggestionBlock({
             className="h-7 text-xs"
             onClick={() => {
               setStatus("accepted");
-              onAccept?.(segment.sectionPath!, segment.content);
+              onAccept?.(segment.sectionPath!, stripMarkdown(segment.content));
             }}
           >
             Accept

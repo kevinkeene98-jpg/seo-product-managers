@@ -57,14 +57,11 @@ export function ResumePreview({ data }: Props) {
               {exp.location && (
                 <div className="text-[9px] text-gray-500">{exp.location}</div>
               )}
-              <ul className="mt-0.5 space-y-0.5 pl-2">
+              <div className="mt-0.5 space-y-0.5 pl-2">
                 {exp.bullets.map((bullet, i) => (
-                  <li key={i} className="flex gap-1.5">
-                    <span className="shrink-0">•</span>
-                    <span>{bullet}</span>
-                  </li>
+                  <div key={i}>{bullet}</div>
                 ))}
-              </ul>
+              </div>
             </div>
           ))}
         </div>
@@ -93,7 +90,7 @@ export function ResumePreview({ data }: Props) {
       {data.skills.length > 0 && (
         <div>
           <SectionHeading>{labels.skills || "Skills"}</SectionHeading>
-          <p>{data.skills.join(" • ")}</p>
+          <p>{data.skills.join(", ")}</p>
         </div>
       )}
 

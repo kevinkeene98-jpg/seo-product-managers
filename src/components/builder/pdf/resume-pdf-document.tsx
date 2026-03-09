@@ -130,7 +130,6 @@ export function ResumePdfDocument({ data }: Props) {
                 )}
                 {exp.bullets.map((bullet, i) => (
                   <View key={i} style={styles.bullet}>
-                    <Text style={styles.bulletDot}>•</Text>
                     <Text style={styles.bulletText}>{bullet}</Text>
                   </View>
                 ))}
@@ -162,7 +161,7 @@ export function ResumePdfDocument({ data }: Props) {
         {data.skills.length > 0 && (
           <>
             <Text style={styles.sectionTitle}>{labels.skills || "Skills"}</Text>
-            <Text>{data.skills.join(" • ")}</Text>
+            <Text>{data.skills.join(", ")}</Text>
           </>
         )}
 
