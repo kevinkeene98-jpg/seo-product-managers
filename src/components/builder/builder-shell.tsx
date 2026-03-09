@@ -6,7 +6,7 @@ import { TabBar } from "./tab-bar";
 import { ResumeTab } from "./tabs/resume-tab";
 import { CoverLetterTab } from "./tabs/cover-letter-tab";
 import { QATab } from "./tabs/qa-tab";
-import { JobDescriptionTab } from "./tabs/job-description-tab";
+
 import { ResumePreview } from "./pdf/resume-preview";
 import { CoverLetterPreview } from "./pdf/cover-letter-preview";
 import { ChatPanel } from "./chat/chat-panel";
@@ -185,9 +185,7 @@ export function BuilderShell({
     <div className="flex h-screen flex-col">
       <UnsavedBanner />
       <BuilderHeader
-        jobId={job.id}
-        jobTitle={job.title}
-        companyName={job.companyName}
+        job={job}
         remainingMessages={initialRemaining}
         resumeData={resumeData}
         onExportPdf={handleExportPdf}
@@ -256,9 +254,6 @@ export function BuilderShell({
                 )}
                 {activeTab === "qa" && (
                   <QATab content={qaContent} onChange={setQAContent} />
-                )}
-                {activeTab === "job-description" && (
-                  <JobDescriptionTab job={job} />
                 )}
               </>
             ) : (

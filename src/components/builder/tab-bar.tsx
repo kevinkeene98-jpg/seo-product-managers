@@ -19,12 +19,6 @@ export function TabBar({ activeTab, onTabChange }: Props) {
         <TabsTrigger value="resume">Resume</TabsTrigger>
         <TabsTrigger value="cover-letter">Cover Letter</TabsTrigger>
         <TabsTrigger value="qa">Q&A</TabsTrigger>
-        <TabsTrigger
-          value="job-description"
-          className="ml-auto border-l border-border pl-3 text-muted-foreground"
-        >
-          Job Description
-        </TabsTrigger>
       </TabsList>
     </Tabs>
   );
