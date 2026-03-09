@@ -3,7 +3,7 @@ import { getSessionId } from "@/lib/session";
 import { getAuthUser } from "@/lib/auth";
 import { getChatMessages, addChatMessage, getDailyMessageCount, getMessageLimitResetTime } from "@/lib/queries/chat";
 import { updateApplicationField, linkApplicationToUser } from "@/lib/queries/applications";
-import { streamChat, generateFitAssessment, parseSuggestions } from "@/lib/ai/client";
+import { streamChat, streamFitAssessment, parseSuggestions } from "@/lib/ai/client";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
 import { applications } from "@/db/schema";
@@ -82,60 +82,19 @@ export async function POST(request: Request) {
   const existingMessages = await getChatMessages(applicationId);
   const isFirstMessage = existingMessages.length === 0;
 
-  // If this is the first interaction and we have resume data, run fit assessment via Opus
-  if (isFirstMessage && resumeData) {
-    // Save user message
-    await addChatMessage({
-      applicationId,
-      role: "user",
-      content: message || "Please assess my fit for this role.",
-      activeTab,
-    });
-
-    const assessment = await generateFitAssessment(
-      resumeData,
-      job.title,
-      job.companyName,
-      job.description
-    );
-
-    // Save assessment
-    await addChatMessage({
-      applicationId,
-      role: "assistant",
-      content: assessment,
-      activeTab,
-    });
-
-    // Store fit assessment on the application
-    await updateApplicationField(applicationId, "fitAssessment", assessment);
-
-    // Parse any suggestions
-    const suggestions = parseSuggestions(assessment);
-    for (const suggestion of suggestions) {
-      await addChatMessage({
-        applicationId,
-        role: "assistant",
-        content: `Suggestion for ${suggestion.sectionPath}`,
-        activeTab,
-        targetSection: suggestion.sectionPath,
-        suggestedContent: suggestion.content,
-      });
-    }
-
-    return NextResponse.json({
-      content: assessment,
-      remaining: isPaid ? 999 : FREE_DAILY_LIMIT - messageCount - 1,
-      suggestions,
-    });
-  }
-
-  // Regular chat — save user message
+  // Save user message
   if (message) {
     await addChatMessage({
       applicationId,
       role: "user",
-      content: message,
+      content: message || (isFirstMessage && resumeData ? "Please assess my fit for this role." : ""),
+      activeTab,
+    });
+  } else if (isFirstMessage && resumeData) {
+    await addChatMessage({
+      applicationId,
+      role: "user",
+      content: "Please assess my fit for this role.",
       activeTab,
     });
   }
@@ -146,22 +105,26 @@ export async function POST(request: Request) {
     .filter((m) => m.role === "user" || (m.role === "assistant" && !m.targetSection))
     .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 
-  // Stream response using Sonnet
+  // Choose the right generator: fit assessment for first message, regular chat otherwise
+  const isAssessment = isFirstMessage && resumeData;
+
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       let fullResponse = "";
       try {
-        const gen = streamChat(chatHistory, {
-          resume: resumeData,
-          jobTitle: job.title,
-          jobCompany: job.companyName,
-          jobDescription: job.description,
-          fitAssessment: app.fitAssessment,
-          activeTab: (activeTab || "resume") as BuilderTab,
-          coverLetter: app.coverLetterContent as string | null,
-          qaContent: app.qaContent ? JSON.stringify(app.qaContent) : null,
-        });
+        const gen = isAssessment
+          ? streamFitAssessment(resumeData!, job.title, job.companyName, job.description)
+          : streamChat(chatHistory, {
+              resume: resumeData,
+              jobTitle: job.title,
+              jobCompany: job.companyName,
+              jobDescription: job.description,
+              fitAssessment: app.fitAssessment,
+              activeTab: (activeTab || "resume") as BuilderTab,
+              coverLetter: app.coverLetterContent as string | null,
+              qaContent: app.qaContent ? JSON.stringify(app.qaContent) : null,
+            });
 
         for await (const chunk of gen) {
           fullResponse += chunk;
@@ -175,6 +138,11 @@ export async function POST(request: Request) {
           content: fullResponse,
           activeTab,
         });
+
+        // Store fit assessment on first message
+        if (isAssessment) {
+          await updateApplicationField(applicationId, "fitAssessment", fullResponse);
+        }
 
         // Parse and save any suggestions
         const suggestions = parseSuggestions(fullResponse);
@@ -196,6 +164,7 @@ export async function POST(request: Request) {
         );
         controller.close();
       } catch (error) {
+        console.error("Stream error:", error);
         controller.enqueue(
           encoder.encode(`data: ${JSON.stringify({ error: "Chat failed" })}\n\n`)
         );
