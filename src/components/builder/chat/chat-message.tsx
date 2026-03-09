@@ -207,7 +207,26 @@ function SuggestionBlock({
 }) {
   const [status, setStatus] = useState<"pending" | "accepted" | "dismissed">("pending");
 
-  if (status === "dismissed") return null;
+  if (status === "dismissed") {
+    return (
+      <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900/30">
+        <div className="flex items-center justify-between">
+          <div className="text-xs text-muted-foreground">
+            <span className="font-medium">{formatSectionLabel(segment.sectionPath!)}</span>
+            {" "}&mdash; dismissed
+          </div>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 text-xs text-muted-foreground"
+            onClick={() => setStatus("pending")}
+          >
+            Reopen
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm dark:border-blue-800 dark:bg-blue-950/30">
