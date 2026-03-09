@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { RESUME_PARSE_PROMPT, FIT_ASSESSMENT_PROMPT, CHAT_SYSTEM_PROMPT } from "./prompts";
+import { RESUME_PARSE_PROMPT, FIT_ASSESSMENT_PROMPT, CHAT_SYSTEM_PROMPT, COVER_LETTER_PROMPT } from "./prompts";
 import type { ResumeData, BuilderTab } from "@/lib/types/resume";
 
 let client: Anthropic | null = null;
@@ -59,6 +59,32 @@ export async function* streamFitAssessment(
     model: "claude-sonnet-4-20250514",
     max_tokens: 2048,
     system: FIT_ASSESSMENT_PROMPT,
+    messages: [
+      {
+        role: "user",
+        content: `## Candidate Resume\n${JSON.stringify(resume, null, 2)}\n\n## Job: ${jobTitle} at ${jobCompany}\n${jobDescription}`,
+      },
+    ],
+  });
+
+  for await (const event of stream) {
+    if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+      yield event.delta.text;
+    }
+  }
+}
+
+export async function* streamCoverLetter(
+  resume: ResumeData,
+  jobTitle: string,
+  jobCompany: string,
+  jobDescription: string
+): AsyncGenerator<string> {
+  const anthropic = getClient();
+  const stream = anthropic.messages.stream({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 2048,
+    system: COVER_LETTER_PROMPT,
     messages: [
       {
         role: "user",

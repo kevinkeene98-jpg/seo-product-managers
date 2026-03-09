@@ -262,7 +262,12 @@ export function BuilderShell({
                   />
                 )}
                 {activeTab === "cover-letter" && (
-                  <CoverLetterTab content={coverLetter} onChange={setCoverLetter} />
+                  <CoverLetterTab
+                    content={coverLetter}
+                    onChange={setCoverLetter}
+                    applicationId={applicationId}
+                    hasResume={!!resumeData}
+                  />
                 )}
                 {activeTab === "qa" && (
                   <QATab content={qaContent} onChange={setQAContent} />
