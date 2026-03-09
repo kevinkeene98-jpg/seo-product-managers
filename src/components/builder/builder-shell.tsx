@@ -6,7 +6,7 @@ import { TabBar } from "./tab-bar";
 import { ResumeTab } from "./tabs/resume-tab";
 import { CoverLetterTab } from "./tabs/cover-letter-tab";
 import { QATab } from "./tabs/qa-tab";
-
+import { JobDescriptionTab } from "./tabs/job-description-tab";
 import { ResumePreview } from "./pdf/resume-preview";
 import { CoverLetterPreview } from "./pdf/cover-letter-preview";
 import { ChatPanel } from "./chat/chat-panel";
@@ -161,6 +161,9 @@ export function BuilderShell({
     [resumeData, setResumeData]
   );
 
+  // JD accordion state
+  const [jdOpen, setJdOpen] = useState(false);
+
   // Editing mode: when true, left panel shows editor; when false, shows preview
   const [isEditing, setIsEditing] = useState(false);
 
@@ -190,56 +193,65 @@ export function BuilderShell({
         resumeData={resumeData}
         onExportPdf={handleExportPdf}
         saveStatus={saveStatus}
+        jdOpen={jdOpen}
+        onToggleJd={() => setJdOpen(!jdOpen)}
       />
 
       <div className="flex min-h-0 flex-1">
         {/* Left Panel: Preview or Editor */}
         <div className="flex w-1/2 flex-col border-r">
-          <div className="border-b px-4 pt-2">
-            <div className="flex items-center gap-2">
-              <div className="flex-1">
-                <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
+          <div className="flex-1 overflow-y-auto">
+            {/* Expandable Job Description — pushes content below it down */}
+            {jdOpen && (
+              <div className="border-b">
+                <JobDescriptionTab job={job} />
               </div>
-              <div className="flex gap-1 pb-2">
-                {/* Edit / Done toggle */}
-                {hasPreview && (
-                  <Button
-                    variant={isEditing ? "default" : "outline"}
-                    size="sm"
-                    className="h-7 text-xs"
-                    onClick={() => setIsEditing(!isEditing)}
-                  >
-                    {isEditing ? "Done" : "Edit"}
-                  </Button>
-                )}
-                {/* Undo / Redo (only in edit mode on resume tab) */}
-                {isEditing && activeTab === "resume" && resumeData && (
-                  <>
+            )}
+
+            {/* Tab bar + controls */}
+            <div className="sticky top-0 z-10 border-b bg-background px-4 pt-2">
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
+                </div>
+                <div className="flex gap-1 pb-2">
+                  {hasPreview && (
                     <Button
-                      variant="ghost"
+                      variant={isEditing ? "default" : "outline"}
                       size="sm"
-                      onClick={undo}
-                      disabled={!canUndo}
                       className="h-7 text-xs"
+                      onClick={() => setIsEditing(!isEditing)}
                     >
-                      Undo
+                      {isEditing ? "Done" : "Edit"}
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={redo}
-                      disabled={!canRedo}
-                      className="h-7 text-xs"
-                    >
-                      Redo
-                    </Button>
-                  </>
-                )}
+                  )}
+                  {isEditing && activeTab === "resume" && resumeData && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={undo}
+                        disabled={!canUndo}
+                        className="h-7 text-xs"
+                      >
+                        Undo
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={redo}
+                        disabled={!canRedo}
+                        className="h-7 text-xs"
+                      >
+                        Redo
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex-1 overflow-y-auto">
+            {/* Tab content */}
             {showEditor ? (
               <>
                 {activeTab === "resume" && (
@@ -257,7 +269,7 @@ export function BuilderShell({
                 )}
               </>
             ) : (
-              <div className="overflow-y-auto bg-gray-100 p-6 dark:bg-gray-900/50">
+              <div className="bg-gray-100 p-6 dark:bg-gray-900/50">
                 {hasResumePreview && <ResumePreview data={resumeData!} />}
                 {hasCoverLetterPreview && (
                   <CoverLetterPreview
