@@ -50,7 +50,7 @@ export async function getApplicationsByUser(userId: number) {
     .from(applications)
     .innerJoin(jobs, eq(applications.jobId, jobs.id))
     .where(eq(applications.userId, userId))
-    .orderBy(applications.updatedAt);
+    .orderBy(applications.sortOrder);
 }
 
 export async function updateApplicationField(
