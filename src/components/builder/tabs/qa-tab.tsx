@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -13,11 +13,26 @@ interface Props {
   hasResume: boolean;
 }
 
+const EMPTY_ENTRIES: QAEntry[] = [
+  { question: "", answer: "" },
+  { question: "", answer: "" },
+  { question: "", answer: "" },
+];
+
 export function QATab({ content, onChange, applicationId, hasResume }: Props) {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleGenerate = useCallback(async () => {
+  // Initialize with 3 empty fields if no content
+  useEffect(() => {
+    if (!content || content.length === 0) {
+      onChange(EMPTY_ENTRIES);
+    }
+  }, []);
+
+  const entries = content && content.length > 0 ? content : EMPTY_ENTRIES;
+
+  const handleGenerateQuestions = useCallback(async () => {
     setGenerating(true);
     setError(null);
 
@@ -31,48 +46,38 @@ export function QATab({ content, onChange, applicationId, hasResume }: Props) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Generation failed");
 
-      onChange(data.entries);
+      // Fill in questions only, preserve existing answers
+      const questions: string[] = data.entries;
+      const updated = entries.map((entry, i) => ({
+        question: questions[i] || entry.question,
+        answer: entry.answer,
+      }));
+      // Add any extra generated questions beyond current count
+      for (let i = entries.length; i < questions.length; i++) {
+        updated.push({ question: questions[i], answer: "" });
+      }
+      onChange(updated);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Generation failed");
     } finally {
       setGenerating(false);
     }
-  }, [applicationId, onChange]);
+  }, [applicationId, entries, onChange]);
 
   const handleAdd = () => {
-    onChange([...(content || []), { question: "", answer: "" }]);
+    onChange([...entries, { question: "", answer: "" }]);
   };
 
   const handleRemove = (index: number) => {
-    if (!content) return;
-    onChange(content.filter((_, i) => i !== index));
+    if (entries.length <= 1) return;
+    onChange(entries.filter((_, i) => i !== index));
   };
 
   const handleUpdate = (index: number, field: "question" | "answer", value: string) => {
-    if (!content) return;
-    const updated = [...content];
+    const updated = [...entries];
     updated[index] = { ...updated[index], [field]: value };
     onChange(updated);
   };
-
-  if ((!content || content.length === 0) && !generating) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-4 p-12 text-center">
-        <div className="text-4xl">❓</div>
-        <h3 className="text-lg font-semibold">Interview Q&A Prep</h3>
-        <p className="max-w-sm text-sm text-muted-foreground">
-          Generate interview questions and suggested answers based on your resume and this job description.
-        </p>
-        {error && <p className="text-sm text-red-500">{error}</p>}
-        <Button onClick={handleGenerate} disabled={!hasResume}>
-          {generating ? "Generating..." : "Generate Q&A"}
-        </Button>
-        {!hasResume && (
-          <p className="text-xs text-muted-foreground">Upload your resume first</p>
-        )}
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4 p-4">
@@ -80,38 +85,35 @@ export function QATab({ content, onChange, applicationId, hasResume }: Props) {
         <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Interview Q&A Preparation
         </h3>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleGenerate}
-            disabled={generating || !hasResume}
-          >
-            {generating ? "Generating..." : "Regenerate"}
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleGenerateQuestions}
+          disabled={generating || !hasResume}
+        >
+          {generating ? "Generating..." : "Generate questions with AI"}
+        </Button>
       </div>
 
+      {!hasResume && (
+        <p className="text-xs text-muted-foreground">Upload your resume to generate questions with AI</p>
+      )}
       {error && <p className="text-sm text-red-500">{error}</p>}
 
-      {generating && (
-        <div className="flex items-center justify-center py-8">
-          <p className="text-sm text-muted-foreground">Generating interview questions...</p>
-        </div>
-      )}
-
-      {!generating && content && content.map((qa, i) => (
+      {entries.map((qa, i) => (
         <div key={i} className="rounded-md border p-3">
           <div className="mb-1 flex items-center justify-between">
             <label className="text-xs font-medium text-muted-foreground">
               Question {i + 1}
             </label>
-            <button
-              onClick={() => handleRemove(i)}
-              className="text-xs text-muted-foreground hover:text-red-500"
-            >
-              Remove
-            </button>
+            {entries.length > 1 && (
+              <button
+                onClick={() => handleRemove(i)}
+                className="text-xs text-muted-foreground hover:text-red-500"
+              >
+                Remove
+              </button>
+            )}
           </div>
           <Input
             value={qa.question}
@@ -120,22 +122,20 @@ export function QATab({ content, onChange, applicationId, hasResume }: Props) {
             placeholder="Enter a question..."
           />
           <label className="mb-1 block text-xs font-medium text-muted-foreground">
-            Answer
+            Your Answer
           </label>
           <Textarea
             rows={3}
             value={qa.answer}
             onChange={(e) => handleUpdate(i, "answer", e.target.value)}
-            placeholder="Enter your answer..."
+            placeholder="Write your answer..."
           />
         </div>
       ))}
 
-      {!generating && (
-        <Button variant="outline" size="sm" onClick={handleAdd} className="w-full">
-          + Add Question
-        </Button>
-      )}
+      <Button variant="outline" size="sm" onClick={handleAdd} className="w-full">
+        + Add Question
+      </Button>
     </div>
   );
 }

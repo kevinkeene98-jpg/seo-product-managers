@@ -105,7 +105,7 @@ export async function generateQA(
   jobTitle: string,
   jobCompany: string,
   jobDescription: string
-): Promise<Array<{ question: string; answer: string }>> {
+): Promise<string[]> {
   const anthropic = getClient();
   const response = await anthropic.messages.create({
     model: "claude-sonnet-4-20250514",
