@@ -12,9 +12,10 @@ import type { Job } from "@/lib/types";
 
 interface JobCardProps {
   job: Job;
+  hasApplication?: boolean;
 }
 
-export function JobCard({ job }: JobCardProps) {
+export function JobCard({ job, hasApplication }: JobCardProps) {
   return (
     <Card className="transition-shadow hover:shadow-md">
       <CardContent className="p-6">
@@ -75,7 +76,7 @@ export function JobCard({ job }: JobCardProps) {
                 salaryMax={job.salaryMax}
               />
               <Link href={`/builder/${job.id}`} className={cn(buttonVariants({ variant: "default", size: "sm" }))}>
-                Build Resume
+                {hasApplication ? "Continue" : "Build Resume"}
               </Link>
             </div>
           </div>

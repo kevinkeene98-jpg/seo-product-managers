@@ -13,9 +13,11 @@ interface JobListProps {
     total: number;
     totalPages: number;
   };
+  activeJobIds?: number[];
 }
 
-export function JobList({ jobs, pagination }: JobListProps) {
+export function JobList({ jobs, pagination, activeJobIds = [] }: JobListProps) {
+  const activeSet = new Set(activeJobIds);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -46,7 +48,7 @@ export function JobList({ jobs, pagination }: JobListProps) {
 
       <div className="space-y-4">
         {jobs.map((job) => (
-          <JobCard key={job.id} job={job} />
+          <JobCard key={job.id} job={job} hasApplication={activeSet.has(job.id)} />
         ))}
       </div>
 

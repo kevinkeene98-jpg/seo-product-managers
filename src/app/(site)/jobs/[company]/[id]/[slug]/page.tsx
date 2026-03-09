@@ -6,6 +6,8 @@ import { JobHeader } from "@/components/job-detail/job-header";
 import { JobDescription } from "@/components/job-detail/job-description";
 import { JobCTABar } from "@/components/job-detail/job-cta-bar";
 import { getJobById } from "@/lib/queries/jobs";
+import { hasApplicationForJob } from "@/lib/queries/applications";
+import { getSessionId } from "@/lib/session";
 import type { Job } from "@/lib/types";
 
 interface PageProps {
@@ -32,6 +34,10 @@ export default async function JobDetailPage({ params }: PageProps) {
   const { id } = await params;
   const raw = await getJobById(Number(id));
   if (!raw) notFound();
+
+  const sessionId = await getSessionId();
+  const hasApplication = sessionId ? await hasApplicationForJob(sessionId, Number(id)) : false;
+  const resumeLabel = hasApplication ? "Continue" : "Build Resume";
 
   const job: Job = {
     id: raw.id,
@@ -67,7 +73,7 @@ export default async function JobDetailPage({ params }: PageProps) {
         </div>
         <aside className="hidden lg:block">
           <div className="sticky top-24">
-            <JobCTABar job={job} />
+            <JobCTABar job={job} resumeLabel={resumeLabel} />
           </div>
         </aside>
       </div>
@@ -79,7 +85,7 @@ export default async function JobDetailPage({ params }: PageProps) {
             href={`/builder/${job.id}`}
             className="flex-1 rounded-md bg-primary px-4 py-3 text-center text-sm font-medium text-primary-foreground"
           >
-            Build Resume
+            {resumeLabel}
           </Link>
           {job.applyUrl && (
             <a

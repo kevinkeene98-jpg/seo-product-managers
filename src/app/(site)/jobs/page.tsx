@@ -4,6 +4,8 @@ import { JobFilters } from "@/components/jobs/job-filters";
 import { JobList } from "@/components/jobs/job-list";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getActiveJobs } from "@/lib/queries/jobs";
+import { getApplicationJobIds } from "@/lib/queries/applications";
+import { getSessionId } from "@/lib/session";
 import type { Job } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -38,7 +40,8 @@ export default async function JobsPage({ searchParams }: PageProps) {
     sort: "salary_desc" as const,
   };
 
-  const result = await getActiveJobs(filters);
+  const [result, sessionId] = await Promise.all([getActiveJobs(filters), getSessionId()]);
+  const activeJobIds = sessionId ? await getApplicationJobIds(sessionId) : new Set<number>();
 
   // Raw SQL returns snake_case keys and plain strings (not Date objects)
   const jobs: Job[] = result.jobs.map((j: Record<string, unknown>) => ({
@@ -89,7 +92,7 @@ export default async function JobsPage({ searchParams }: PageProps) {
               </div>
             }
           >
-            <JobList jobs={jobs} pagination={result.pagination} />
+            <JobList jobs={jobs} pagination={result.pagination} activeJobIds={Array.from(activeJobIds)} />
           </Suspense>
         </div>
       </div>

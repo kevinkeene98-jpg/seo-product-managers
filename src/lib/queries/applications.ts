@@ -53,6 +53,25 @@ export async function getApplicationsByUser(userId: number) {
     .orderBy(applications.sortOrder);
 }
 
+export async function getApplicationJobIds(sessionId: string): Promise<Set<number>> {
+  const rows = await db
+    .select({ jobId: applications.jobId })
+    .from(applications)
+    .where(eq(applications.sessionId, sessionId));
+
+  return new Set(rows.map((r) => r.jobId));
+}
+
+export async function hasApplicationForJob(sessionId: string, jobId: number): Promise<boolean> {
+  const [row] = await db
+    .select({ id: applications.id })
+    .from(applications)
+    .where(and(eq(applications.sessionId, sessionId), eq(applications.jobId, jobId)))
+    .limit(1);
+
+  return !!row;
+}
+
 export async function updateApplicationField(
   applicationId: number,
   field: "resumeContent" | "coverLetterContent" | "qaContent" | "fitAssessment",
