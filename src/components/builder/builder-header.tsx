@@ -27,38 +27,33 @@ export function BuilderHeader({
 }: Props) {
   return (
     <header className="flex h-14 items-center justify-between border-b bg-background px-4">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
+        {job.companyLogoUrl ? (
+          <img
+            src={job.companyLogoUrl}
+            alt={job.companyName}
+            className="h-6 w-6 rounded object-contain"
+          />
+        ) : (
+          <div className="flex h-6 w-6 items-center justify-center rounded bg-muted text-xs font-bold text-muted-foreground">
+            {job.companyName.charAt(0)}
+          </div>
+        )}
         <Link
           href={jobUrl({ id: job.id, companyName: job.companyName, title: job.title })}
-          className="text-sm text-muted-foreground hover:text-foreground"
+          className="hover:underline"
         >
-          &larr; Back
+          <span className="font-semibold">{job.title}</span>
+          <span className="text-muted-foreground"> at {job.companyName}</span>
         </Link>
-        <div className="hidden items-center gap-2 sm:flex">
-          {job.companyLogoUrl ? (
-            <img
-              src={job.companyLogoUrl}
-              alt={job.companyName}
-              className="h-6 w-6 rounded object-contain"
-            />
-          ) : (
-            <div className="flex h-6 w-6 items-center justify-center rounded bg-muted text-xs font-bold text-muted-foreground">
-              {job.companyName.charAt(0)}
-            </div>
-          )}
-          <div>
-            <span className="font-semibold">{job.title}</span>
-            <span className="text-muted-foreground"> at {job.companyName}</span>
-          </div>
-        </div>
         <button
           onClick={onToggleJd}
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          className="ml-1 text-muted-foreground hover:text-foreground"
+          aria-label="Toggle job description"
         >
-          <span>View job description</span>
           <svg
-            width="12"
-            height="12"
+            width="14"
+            height="14"
             viewBox="0 0 12 12"
             fill="none"
             stroke="currentColor"
