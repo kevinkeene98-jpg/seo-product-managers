@@ -16,7 +16,6 @@ interface RecentApp {
 
 const navItems = [
   { href: "/dashboard", label: "Applications" },
-  { href: "/dashboard/settings", label: "Settings" },
 ];
 
 function EllipsisMenu({
@@ -148,6 +147,7 @@ export function BuilderSidebar() {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
   const [recentApps, setRecentApps] = useState<RecentApp[]>([]);
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -262,12 +262,36 @@ export function BuilderSidebar() {
           <p className="truncate px-1 text-xs font-medium">
             {user?.name || user?.email}
           </p>
-          <button
-            onClick={() => signOut()}
+          <Link
+            href="/dashboard/settings"
             className="px-1 text-left text-xs text-muted-foreground hover:text-foreground"
           >
-            Sign out
-          </button>
+            Settings
+          </Link>
+          {confirmSignOut ? (
+            <div className="flex items-center gap-2 px-1">
+              <span className="text-xs text-muted-foreground">Sign out?</span>
+              <button
+                onClick={() => signOut()}
+                className="text-xs font-medium text-red-500 hover:text-red-600"
+              >
+                Yes
+              </button>
+              <button
+                onClick={() => setConfirmSignOut(false)}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                No
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmSignOut(true)}
+              className="px-1 text-left text-xs text-muted-foreground hover:text-foreground"
+            >
+              Sign out
+            </button>
+          )}
         </div>
       </div>
     </aside>
