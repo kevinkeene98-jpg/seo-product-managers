@@ -28,6 +28,7 @@ export const config = {
     "/api/builder/:path*",
     "/api/auth/:path*",
     "/api/dashboard/:path*",
+    "/dashboard",
     "/dashboard/:path*",
   ],
 };
