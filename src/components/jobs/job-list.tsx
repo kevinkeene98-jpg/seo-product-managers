@@ -25,7 +25,7 @@ export function JobList({ jobs, pagination, activeJobIds = [] }: JobListProps) {
     return (
       <div className="py-16 text-center">
         <p className="text-lg text-muted-foreground">
-          No jobs found matching your filters.
+          No open roles found matching your filters.
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
           Try adjusting your search criteria.
@@ -43,7 +43,7 @@ export function JobList({ jobs, pagination, activeJobIds = [] }: JobListProps) {
   return (
     <div>
       <p className="mb-4 text-sm text-muted-foreground">
-        {pagination.total} job{pagination.total !== 1 ? "s" : ""} found
+        {pagination.total} open role{pagination.total !== 1 ? "s" : ""} found
       </p>
 
       <div className="space-y-4">
