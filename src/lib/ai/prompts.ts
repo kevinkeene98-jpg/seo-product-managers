@@ -122,10 +122,10 @@ export const COVER_LETTER_PROMPT = `Generate a professional cover letter for thi
 - Sound authentic, not generic
 - Output only the cover letter text, no extra commentary`;
 
-export const QA_PREP_PROMPT = `Generate exactly 3 interview preparation questions for this candidate applying to this role. Focus on:
-- Role-specific questions they're likely to face
-- Questions about their relevant experience
-- Behavioral questions related to the job requirements
+export const QA_PREP_PROMPT = `Generate exactly 3 short interview questions based only on the job description. Each question should be one sentence. Focus on:
+- Key responsibilities mentioned in the job posting
+- Required skills or qualifications from the listing
+- Challenges specific to the role
 
-Output valid JSON only, no markdown fences. Format:
+Do NOT reference the candidate's resume or background. Output valid JSON only, no markdown fences. Format:
 ["Question 1?", "Question 2?", "Question 3?"]`;

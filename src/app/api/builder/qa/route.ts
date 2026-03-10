@@ -25,27 +25,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Application not found" }, { status: 404 });
     }
 
-    let resumeData = app.resumeContent as ResumeData | null;
-    if (!resumeData) {
-      const { resumes } = await import("@/db/schema");
-      const [resume] = await db
-        .select()
-        .from(resumes)
-        .where(eq(resumes.sessionId, sessionId))
-        .limit(1);
-      if (resume?.parsedContent) {
-        resumeData = resume.parsedContent as ResumeData;
-      }
-    }
-
-    if (!resumeData) {
-      return NextResponse.json({ error: "Upload your resume first" }, { status: 400 });
-    }
-
     const [job] = await db.select().from(jobs).where(eq(jobs.id, app.jobId)).limit(1);
     if (!job) {
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
     }
+
+    // Resume is optional — Q&A questions are based on the job description only
+    const resumeData = (app.resumeContent as ResumeData | null) ?? {
+      contactInfo: { name: "", email: "", phone: "", location: "" },
+      summary: "",
+      experience: [],
+      education: [],
+      skills: [],
+    };
 
     const qaEntries = await generateQA(resumeData, job.title, job.companyName, job.description);
     return NextResponse.json({ entries: qaEntries });

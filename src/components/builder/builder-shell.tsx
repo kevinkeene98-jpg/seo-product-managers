@@ -4,8 +4,8 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { BuilderHeader } from "./builder-header";
 import { TabBar } from "./tab-bar";
 import { ResumeTab } from "./tabs/resume-tab";
-import { CoverLetterTab } from "./tabs/cover-letter-tab";
-import { QATab } from "./tabs/qa-tab";
+import { CoverLetterTab, type CoverLetterTabHandle } from "./tabs/cover-letter-tab";
+import { QATab, type QATabHandle } from "./tabs/qa-tab";
 import { JobDescriptionTab } from "./tabs/job-description-tab";
 import { ResumePreview } from "./pdf/resume-preview";
 import { CoverLetterPreview } from "./pdf/cover-letter-preview";
@@ -43,14 +43,30 @@ export function BuilderShell({
   const {
     state: resumeData,
     set: setResumeData,
-    undo,
-    redo,
-    canUndo,
-    canRedo,
+    undo: undoResume,
+    redo: redoResume,
+    canUndo: canUndoResume,
+    canRedo: canRedoResume,
   } = useUndo<ResumeData | null>(initialResumeData);
-  const [coverLetter, setCoverLetter] = useState<string | null>(initialCoverLetter);
-  const [qaContent, setQAContent] = useState<QAEntry[] | null>(initialQA);
+  const {
+    state: coverLetter,
+    set: setCoverLetter,
+    undo: undoCoverLetter,
+    redo: redoCoverLetter,
+    canUndo: canUndoCoverLetter,
+    canRedo: canRedoCoverLetter,
+  } = useUndo<string | null>(initialCoverLetter);
+  const {
+    state: qaContent,
+    set: setQAContent,
+    undo: undoQA,
+    redo: redoQA,
+    canUndo: canUndoQA,
+    canRedo: canRedoQA,
+  } = useUndo<QAEntry[] | null>(initialQA);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [generatingCL, setGeneratingCL] = useState(false);
+  const [generatingQA, setGeneratingQA] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Debounced auto-save
@@ -107,11 +123,17 @@ export function BuilderShell({
     [setResumeData, save]
   );
 
-  const handleExportPdf = useCallback(async () => {
+  const handleExportResumePdf = useCallback(async () => {
     if (!resumeData) return;
     const { exportResumePdf } = await import("./pdf/export-pdf");
     await exportResumePdf(resumeData);
   }, [resumeData]);
+
+  const handleExportCoverLetterPdf = useCallback(async () => {
+    if (!coverLetter) return;
+    const { exportCoverLetterPdf } = await import("./pdf/export-pdf");
+    await exportCoverLetterPdf(coverLetter, resumeData?.contactInfo.name);
+  }, [coverLetter, resumeData]);
 
   // Handle suggestion acceptance from chat
   const handleSuggestionAccepted = useCallback(
@@ -166,6 +188,9 @@ export function BuilderShell({
 
   const { user } = useAuth();
 
+  const coverLetterRef = useRef<CoverLetterTabHandle>(null);
+  const qaRef = useRef<QATabHandle>(null);
+
   // JD accordion state
   const [jdOpen, setJdOpen] = useState(false);
 
@@ -203,8 +228,6 @@ export function BuilderShell({
         <BuilderHeader
           job={job}
           remainingMessages={initialRemaining}
-          resumeData={resumeData}
-          onExportPdf={handleExportPdf}
           saveStatus={saveStatus}
           jdOpen={jdOpen}
           onToggleJd={() => setJdOpen(!jdOpen)}
@@ -222,46 +245,130 @@ export function BuilderShell({
                 </div>
               )}
 
-              {/* Tab bar + controls */}
+              {/* Tab bar */}
               <div className="sticky top-0 z-10 border-b bg-background px-4 pt-2">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1">
-                    <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
-                  </div>
-                  <div className="flex gap-1 pb-2">
-                    {hasPreview && (
+                <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
+
+                {/* Toolbar */}
+                <div className="flex items-center gap-2 py-2">
+                  {activeTab === "resume" && resumeData && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={handleExportResumePdf}
+                    >
+                      Download PDF
+                    </Button>
+                  )}
+                  {activeTab === "cover-letter" && coverLetter && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={handleExportCoverLetterPdf}
+                    >
+                      Download PDF
+                    </Button>
+                  )}
+                  {hasPreview && (
+                    <Button
+                      variant={isEditing ? "default" : "outline"}
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => setIsEditing(!isEditing)}
+                    >
+                      {isEditing ? "Done" : "Edit"}
+                    </Button>
+                  )}
+                  {activeTab === "cover-letter" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs"
+                      disabled={!resumeData || generatingCL}
+                      onClick={() => coverLetterRef.current?.generate()}
+                    >
+                      {generatingCL ? "Generating..." : "Generate with AI"}
+                    </Button>
+                  )}
+                  {activeTab === "qa" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs"
+                      disabled={generatingQA}
+                      onClick={() => qaRef.current?.generate()}
+                    >
+                      {generatingQA ? "Generating..." : "Generate with AI"}
+                    </Button>
+                  )}
+                  {activeTab === "resume" && resumeData && (
+                    <div className="ml-auto flex gap-1">
                       <Button
-                        variant={isEditing ? "default" : "outline"}
+                        variant="ghost"
                         size="sm"
+                        onClick={undoResume}
+                        disabled={!canUndoResume}
                         className="h-7 text-xs"
-                        onClick={() => setIsEditing(!isEditing)}
                       >
-                        {isEditing ? "Done" : "Edit"}
+                        Undo
                       </Button>
-                    )}
-                    {isEditing && activeTab === "resume" && resumeData && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={undo}
-                          disabled={!canUndo}
-                          className="h-7 text-xs"
-                        >
-                          Undo
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={redo}
-                          disabled={!canRedo}
-                          className="h-7 text-xs"
-                        >
-                          Redo
-                        </Button>
-                      </>
-                    )}
-                  </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={redoResume}
+                        disabled={!canRedoResume}
+                        className="h-7 text-xs"
+                      >
+                        Redo
+                      </Button>
+                    </div>
+                  )}
+                  {activeTab === "cover-letter" && coverLetter && (
+                    <div className="ml-auto flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={undoCoverLetter}
+                        disabled={!canUndoCoverLetter}
+                        className="h-7 text-xs"
+                      >
+                        Undo
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={redoCoverLetter}
+                        disabled={!canRedoCoverLetter}
+                        className="h-7 text-xs"
+                      >
+                        Redo
+                      </Button>
+                    </div>
+                  )}
+                  {activeTab === "qa" && qaContent && qaContent.length > 0 && (
+                    <div className="ml-auto flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={undoQA}
+                        disabled={!canUndoQA}
+                        className="h-7 text-xs"
+                      >
+                        Undo
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={redoQA}
+                        disabled={!canRedoQA}
+                        className="h-7 text-xs"
+                      >
+                        Redo
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -277,18 +384,23 @@ export function BuilderShell({
                   )}
                   {activeTab === "cover-letter" && (
                     <CoverLetterTab
+                      ref={coverLetterRef}
                       content={coverLetter}
                       onChange={setCoverLetter}
                       applicationId={applicationId}
                       hasResume={!!resumeData}
+                      onGeneratingChange={setGeneratingCL}
+                      onNavigateToResume={() => handleTabChange("resume")}
                     />
                   )}
                   {activeTab === "qa" && (
                     <QATab
+                      ref={qaRef}
                       content={qaContent}
                       onChange={setQAContent}
                       applicationId={applicationId}
                       hasResume={!!resumeData}
+                      onGeneratingChange={setGeneratingQA}
                     />
                   )}
                 </>
@@ -315,7 +427,7 @@ export function BuilderShell({
               activeTab={activeTab}
               resumeData={resumeData}
               onSuggestionAccepted={handleSuggestionAccepted}
-              onUndo={undo}
+              onUndo={undoResume}
             />
           </div>
         </div>

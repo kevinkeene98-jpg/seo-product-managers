@@ -16,16 +16,6 @@ export function JobCTABar({ job, resumeLabel = "Build Resume" }: JobCTABarProps)
       <Link href={`/builder/${job.id}`} className={cn(buttonVariants({ variant: "default", size: "lg" }))}>
         {resumeLabel}
       </Link>
-      {job.applyUrl && (
-        <a
-          href={job.applyUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
-        >
-          View Job Posting
-        </a>
-      )}
     </div>
   );
 }

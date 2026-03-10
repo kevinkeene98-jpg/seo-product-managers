@@ -87,16 +87,6 @@ export default async function JobDetailPage({ params }: PageProps) {
           >
             {resumeLabel}
           </Link>
-          {job.applyUrl && (
-            <a
-              href={job.applyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 rounded-md border border-input bg-background px-4 py-3 text-center text-sm font-medium"
-            >
-              View Posting
-            </a>
-          )}
         </div>
       </div>
     </div>

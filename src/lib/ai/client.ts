@@ -101,7 +101,7 @@ export async function* streamCoverLetter(
 }
 
 export async function generateQA(
-  resume: ResumeData,
+  _resume: ResumeData,
   jobTitle: string,
   jobCompany: string,
   jobDescription: string
@@ -114,7 +114,7 @@ export async function generateQA(
     messages: [
       {
         role: "user",
-        content: `## Candidate Resume\n${JSON.stringify(resume, null, 2)}\n\n## Job: ${jobTitle} at ${jobCompany}\n${jobDescription}`,
+        content: `## Job: ${jobTitle} at ${jobCompany}\n${jobDescription}`,
       },
     ],
   });
