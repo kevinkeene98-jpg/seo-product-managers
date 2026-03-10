@@ -292,7 +292,7 @@ export function BuilderShell({
                   )}
                 </>
               ) : (
-                <div className="bg-gray-100 p-6 dark:bg-gray-900/50">
+                <div className="min-h-full bg-gray-100 p-6 dark:bg-gray-900/50">
                   {hasResumePreview && <ResumePreview data={resumeData!} />}
                   {hasCoverLetterPreview && (
                     <CoverLetterPreview
