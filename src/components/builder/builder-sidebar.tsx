@@ -16,7 +16,6 @@ interface RecentApp {
 
 const navItems = [
   { href: "/dashboard", label: "Applications" },
-  { href: "/jobs", label: "Browse jobs" },
   { href: "/dashboard/settings", label: "Settings" },
 ];
 
@@ -242,6 +241,13 @@ export function BuilderSidebar() {
             })}
           </div>
         )}
+
+        <Link
+          href="/jobs"
+          className="mt-2 block px-2.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Browse more open roles &rarr;
+        </Link>
       </nav>
 
       {/* User */}
