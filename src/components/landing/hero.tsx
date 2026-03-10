@@ -6,21 +6,17 @@ import { cn } from "@/lib/utils";
 
 export function Hero() {
   return (
-    <section className="flex flex-col items-center px-4 py-24 text-center md:py-32">
+    <section className="flex flex-col items-center px-4 py-16 text-center md:py-20">
       <h1 className="max-w-3xl text-4xl font-bold tracking-tight md:text-6xl">
-        Find Your Next SEO &amp; Growth Product Role
+        Find Your Next SEO Product Role
       </h1>
       <p className="mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
-        Curated job listings, AI-powered resume builder, and application
-        tracking — built for SEO and growth product managers.
+        The only job board for SEO-first product managers
       </p>
-      <div className="mt-10 flex flex-col items-center gap-4">
+      <div className="mt-10">
         <Link href="/jobs" className={cn(buttonVariants({ variant: "default", size: "lg" }))}>
-          Browse Jobs
+          Browse Open Roles
         </Link>
-        <p className="text-sm text-muted-foreground">
-          No account required to start browsing
-        </p>
       </div>
     </section>
   );
