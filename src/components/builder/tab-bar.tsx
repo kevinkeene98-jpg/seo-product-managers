@@ -17,7 +17,7 @@ export function TabBar({ activeTab, onTabChange }: Props) {
     >
       <TabsList className="w-full justify-start">
         <TabsTrigger value="resume">Resume</TabsTrigger>
-        <TabsTrigger value="cover-letter">Cover Letter</TabsTrigger>
+        <TabsTrigger value="cover-letter">Cover letter</TabsTrigger>
         <TabsTrigger value="qa">Q&A</TabsTrigger>
       </TabsList>
     </Tabs>

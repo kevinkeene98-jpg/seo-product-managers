@@ -24,7 +24,7 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">My Applications</h1>
+      <h1 className="mb-6 text-2xl font-bold">My applications</h1>
       {applications.length === 0 ? (
         <div className="rounded-lg border bg-background p-12 text-center">
           <p className="text-lg font-medium text-muted-foreground">

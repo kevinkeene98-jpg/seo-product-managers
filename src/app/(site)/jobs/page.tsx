@@ -82,7 +82,7 @@ export default async function JobsPage({ searchParams }: PageProps) {
 
         {/* Job list */}
         <div className="min-w-0 flex-1">
-          <h1 className="mb-6 text-3xl font-bold">Browse Product & Growth SEO roles</h1>
+          <h1 className="mb-6 text-3xl font-bold">Browse product & growth SEO roles</h1>
           <Suspense
             fallback={
               <div className="space-y-4">

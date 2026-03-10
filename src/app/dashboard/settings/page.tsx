@@ -55,10 +55,10 @@ export default async function SettingsPage() {
         </div>
         {/* Email Alerts */}
         <div className="rounded-lg border bg-background p-6">
-          <h2 className="mb-4 text-lg font-semibold">Job Alerts</h2>
+          <h2 className="mb-4 text-lg font-semibold">Job alerts</h2>
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium">Daily Email Digest</p>
+              <p className="font-medium">Daily email digest</p>
               <p className="text-sm text-muted-foreground">
                 Get notified when new SEO product manager jobs are posted.
               </p>

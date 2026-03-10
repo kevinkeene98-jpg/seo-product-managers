@@ -60,7 +60,7 @@ function NavContent({ userName, onNavigate }: { userName: string; onNavigate?: (
           onClick={() => signOut()}
           className="mt-1 text-xs text-muted-foreground hover:text-foreground"
         >
-          Sign Out
+          Sign out
         </button>
       </div>
     </>

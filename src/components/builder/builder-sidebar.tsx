@@ -16,7 +16,7 @@ interface RecentApp {
 
 const navItems = [
   { href: "/dashboard", label: "Applications" },
-  { href: "/jobs", label: "Browse Jobs" },
+  { href: "/jobs", label: "Browse jobs" },
   { href: "/dashboard/settings", label: "Settings" },
 ];
 
@@ -118,7 +118,7 @@ export function BuilderSidebar() {
             onClick={() => signOut()}
             className="px-1 text-left text-xs text-muted-foreground hover:text-foreground"
           >
-            Sign Out
+            Sign out
           </button>
         </div>
       </div>

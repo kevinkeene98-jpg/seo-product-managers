@@ -138,12 +138,12 @@ function SortableCard({
       <div className="ml-4 flex items-center gap-2">
         {app.status === "active" && (
           <Button size="sm" variant="outline" onClick={() => onStatusChange(app.id, "applied")}>
-            Mark Applied
+            Mark applied
           </Button>
         )}
         {app.status === "applied" && (
           <Button size="sm" variant="outline" onClick={() => onStatusChange(app.id, "active")}>
-            Mark Active
+            Mark active
           </Button>
         )}
         <Button

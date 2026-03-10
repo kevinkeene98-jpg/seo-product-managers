@@ -12,7 +12,7 @@ export function CTASection() {
       </h2>
       <div className="mt-8">
         <Link href="/jobs" className={cn(buttonVariants({ variant: "default", size: "lg" }))}>
-          Browse Jobs Now
+          Browse jobs now
         </Link>
       </div>
     </section>

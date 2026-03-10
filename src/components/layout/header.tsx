@@ -24,7 +24,7 @@ export function Header() {
             href="/jobs"
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
-            Browse Jobs
+            Browse jobs
           </Link>
           {!isLoading && (
             user ? (
@@ -43,7 +43,7 @@ export function Header() {
                   size="sm"
                   onClick={() => signOut()}
                 >
-                  Sign Out
+                  Sign out
                 </Button>
               </div>
             ) : (
@@ -52,7 +52,7 @@ export function Header() {
                 size="sm"
                 onClick={() => openAuthDialog()}
               >
-                Sign In
+                Sign in
               </Button>
             )
           )}
@@ -83,7 +83,7 @@ export function Header() {
                 className="text-lg font-medium"
                 onClick={() => setOpen(false)}
               >
-                Browse Jobs
+                Browse jobs
               </Link>
               {!isLoading && (
                 user ? (
@@ -102,7 +102,7 @@ export function Header() {
                       className="text-lg font-medium text-left"
                       onClick={() => { signOut(); setOpen(false); }}
                     >
-                      Sign Out
+                      Sign out
                     </button>
                   </>
                 ) : (
@@ -110,7 +110,7 @@ export function Header() {
                     className="text-lg font-medium text-left"
                     onClick={() => { openAuthDialog(); setOpen(false); }}
                   >
-                    Sign In
+                    Sign in
                   </button>
                 )
               )}

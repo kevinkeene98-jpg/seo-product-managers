@@ -80,7 +80,7 @@ export function ResumeInputStep({ onParsed }: Props) {
   if (mode === "paste") {
     return (
       <div className="space-y-4 p-6">
-        <h2 className="text-lg font-semibold">Paste Your Resume</h2>
+        <h2 className="text-lg font-semibold">Paste your resume</h2>
         <Textarea
           placeholder="Paste your resume text here..."
           rows={16}
@@ -91,7 +91,7 @@ export function ResumeInputStep({ onParsed }: Props) {
         {error && <p className="text-sm text-red-500">{error}</p>}
         <div className="flex gap-2">
           <Button onClick={handlePaste} disabled={!pasteText.trim()}>
-            Parse Resume
+            Parse resume
           </Button>
           <Button variant="ghost" onClick={() => setMode("choose")}>
             Back
@@ -103,7 +103,7 @@ export function ResumeInputStep({ onParsed }: Props) {
 
   return (
     <div className="flex flex-col items-center justify-center gap-6 p-8">
-      <h2 className="text-xl font-semibold">Add Your Resume</h2>
+      <h2 className="text-xl font-semibold">Add your resume</h2>
       <p className="text-sm text-muted-foreground">
         Upload a file or paste your resume text. AI will structure it for you.
       </p>
@@ -116,7 +116,7 @@ export function ResumeInputStep({ onParsed }: Props) {
           onClick={() => fileRef.current?.click()}
         >
           <CardContent className="flex flex-col items-center gap-2 p-6 text-center">
-            <span className="font-medium">Upload File</span>
+            <span className="font-medium">Upload file</span>
             <span className="text-xs text-muted-foreground">.pdf or .docx</span>
           </CardContent>
         </Card>
@@ -126,7 +126,7 @@ export function ResumeInputStep({ onParsed }: Props) {
           onClick={() => setMode("paste")}
         >
           <CardContent className="flex flex-col items-center gap-2 p-6 text-center">
-            <span className="font-medium">Paste Text</span>
+            <span className="font-medium">Paste text</span>
             <span className="text-xs text-muted-foreground">Copy & paste</span>
           </CardContent>
         </Card>

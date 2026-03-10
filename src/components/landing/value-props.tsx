@@ -33,7 +33,7 @@ export async function ValueProps() {
 
   return (
     <section className="mx-auto max-w-6xl px-4 pb-16">
-      <h2 className="mb-6 text-2xl font-bold">Latest Roles</h2>
+      <h2 className="mb-6 text-2xl font-bold">Latest roles</h2>
       <div className="space-y-4">
         {jobs.map((job) => (
           <JobCard key={job.id} job={job} hideResumeCta />

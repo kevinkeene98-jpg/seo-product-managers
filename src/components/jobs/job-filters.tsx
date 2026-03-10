@@ -175,7 +175,7 @@ export function JobFilters() {
           )
         }
       >
-        New Jobs Only
+        New jobs only
       </Button>
 
       {/* Clear */}

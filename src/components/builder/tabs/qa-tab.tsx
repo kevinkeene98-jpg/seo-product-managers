@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import type { QAEntry } from "@/lib/types/resume";
@@ -83,7 +82,7 @@ export function QATab({ content, onChange, applicationId, hasResume }: Props) {
     <div className="space-y-4 p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Interview Q&A Preparation
+          Interview Q&A preparation
         </h3>
         <Button
           variant="outline"
@@ -115,14 +114,15 @@ export function QATab({ content, onChange, applicationId, hasResume }: Props) {
               </button>
             )}
           </div>
-          <Input
+          <Textarea
+            rows={2}
             value={qa.question}
             onChange={(e) => handleUpdate(i, "question", e.target.value)}
-            className="mb-2 font-medium"
+            className="mb-2 resize-none font-medium"
             placeholder="Enter a question..."
           />
           <label className="mb-1 block text-xs font-medium text-muted-foreground">
-            Your Answer
+            Your answer
           </label>
           <Textarea
             rows={3}
@@ -134,7 +134,7 @@ export function QATab({ content, onChange, applicationId, hasResume }: Props) {
       ))}
 
       <Button variant="outline" size="sm" onClick={handleAdd} className="w-full">
-        + Add Question
+        + Add question
       </Button>
     </div>
   );

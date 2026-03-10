@@ -71,13 +71,13 @@ export function CoverLetterTab({ content, onChange, applicationId, hasResume }: 
     return (
       <div className="flex flex-col items-center justify-center gap-4 p-12 text-center">
         <div className="text-4xl">✉️</div>
-        <h3 className="text-lg font-semibold">Cover Letter</h3>
+        <h3 className="text-lg font-semibold">Cover letter</h3>
         <p className="max-w-sm text-sm text-muted-foreground">
           Generate a tailored cover letter based on your resume and this job description.
         </p>
         {error && <p className="text-sm text-red-500">{error}</p>}
         <Button onClick={handleGenerate} disabled={!hasResume}>
-          Generate Cover Letter
+          Generate cover letter
         </Button>
         {!hasResume && (
           <p className="text-xs text-muted-foreground">Upload your resume first</p>
@@ -90,7 +90,7 @@ export function CoverLetterTab({ content, onChange, applicationId, hasResume }: 
     <div className="p-4">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Cover Letter
+          Cover letter
         </h3>
         <Button
           variant="outline"

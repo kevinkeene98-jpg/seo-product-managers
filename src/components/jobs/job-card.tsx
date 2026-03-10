@@ -78,7 +78,7 @@ export function JobCard({ job, hasApplication, hideResumeCta }: JobCardProps) {
               />
               {!hideResumeCta && (
                 <Link href={`/builder/${job.id}`} className={cn(buttonVariants({ variant: "default", size: "sm" }))}>
-                  {hasApplication ? "Continue" : "Build Resume"}
+                  {hasApplication ? "Continue" : "Build resume"}
                 </Link>
               )}
             </div>
