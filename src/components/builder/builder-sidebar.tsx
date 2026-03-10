@@ -45,7 +45,10 @@ export function BuilderSidebar() {
       {/* Nav */}
       <nav className="flex-1 space-y-1 overflow-y-auto p-1.5">
         {navItems.map((item) => {
-          const isActive = pathname.startsWith(item.href);
+          const isActive =
+            item.href === "/dashboard"
+              ? pathname === "/dashboard"
+              : pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}
