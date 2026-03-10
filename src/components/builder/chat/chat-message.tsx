@@ -269,44 +269,49 @@ function SuggestionBlock({
       )}
       {status === "pending" && (
         <div className="mt-2 flex gap-2">
-          <Button
-            size="sm"
-            variant="default"
-            className="h-7 text-xs"
-            onClick={() => {
-              setStatus("accepted");
-              setIsEditing(false);
-              onAccept?.(segment.sectionPath!, stripMarkdown(editedContent));
-            }}
-          >
-            Accept
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-7 text-xs"
-            onClick={() => {
-              if (isEditing) {
-                setIsEditing(false);
-              } else {
-                setIsEditing(true);
-              }
-            }}
-          >
-            {isEditing ? "Done editing" : "Edit"}
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-7 text-xs"
-            onClick={() => {
-              setStatus("dismissed");
-              setIsEditing(false);
-              onDismiss?.();
-            }}
-          >
-            Dismiss
-          </Button>
+          {isEditing ? (
+            <Button
+              size="sm"
+              variant="default"
+              className="h-7 text-xs"
+              onClick={() => setIsEditing(false)}
+            >
+              Done editing
+            </Button>
+          ) : (
+            <>
+              <Button
+                size="sm"
+                variant="default"
+                className="h-7 text-xs"
+                onClick={() => {
+                  setStatus("accepted");
+                  onAccept?.(segment.sectionPath!, stripMarkdown(editedContent));
+                }}
+              >
+                Accept
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs"
+                onClick={() => setIsEditing(true)}
+              >
+                Edit
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs"
+                onClick={() => {
+                  setStatus("dismissed");
+                  onDismiss?.();
+                }}
+              >
+                Dismiss
+              </Button>
+            </>
+          )}
         </div>
       )}
       {status === "accepted" && (
