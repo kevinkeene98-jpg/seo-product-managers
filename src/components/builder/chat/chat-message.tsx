@@ -225,6 +225,8 @@ function SuggestionBlock({
   onUndo?: () => void;
 }) {
   const [status, setStatus] = useState<"pending" | "accepted" | "dismissed">("pending");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedContent, setEditedContent] = useState(segment.content);
   const label = segment.title || formatSectionLabel(segment.sectionPath!);
 
   if (status === "dismissed") {
@@ -253,9 +255,18 @@ function SuggestionBlock({
       <div className="mb-1 text-sm font-bold text-foreground">
         {label}
       </div>
-      <div className="max-h-32 overflow-y-auto whitespace-pre-wrap text-xs text-muted-foreground">
-        {segment.content}
-      </div>
+      {isEditing ? (
+        <textarea
+          className="w-full rounded border border-blue-300 bg-white px-2 py-1 text-xs text-foreground dark:bg-gray-900"
+          rows={Math.min(Math.max(editedContent.split("\n").length, 3), 10)}
+          value={editedContent}
+          onChange={(e) => setEditedContent(e.target.value)}
+        />
+      ) : (
+        <div className="max-h-32 overflow-y-auto whitespace-pre-wrap text-xs text-muted-foreground">
+          {editedContent}
+        </div>
+      )}
       {status === "pending" && (
         <div className="mt-2 flex gap-2">
           <Button
@@ -264,7 +275,8 @@ function SuggestionBlock({
             className="h-7 text-xs"
             onClick={() => {
               setStatus("accepted");
-              onAccept?.(segment.sectionPath!, stripMarkdown(segment.content));
+              setIsEditing(false);
+              onAccept?.(segment.sectionPath!, stripMarkdown(editedContent));
             }}
           >
             Accept
@@ -274,7 +286,22 @@ function SuggestionBlock({
             variant="ghost"
             className="h-7 text-xs"
             onClick={() => {
+              if (isEditing) {
+                setIsEditing(false);
+              } else {
+                setIsEditing(true);
+              }
+            }}
+          >
+            {isEditing ? "Done editing" : "Edit"}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 text-xs"
+            onClick={() => {
               setStatus("dismissed");
+              setIsEditing(false);
               onDismiss?.();
             }}
           >
