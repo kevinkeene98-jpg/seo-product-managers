@@ -24,7 +24,7 @@ export function Header() {
             href="/jobs"
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
-            Browse jobs
+            Browse open roles
           </Link>
           {!isLoading && user && (
             <>
@@ -88,7 +88,7 @@ export function Header() {
                 className="text-lg font-medium"
                 onClick={() => setOpen(false)}
               >
-                Browse jobs
+                Browse open roles
               </Link>
               {!isLoading && (
                 user ? (
