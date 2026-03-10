@@ -13,7 +13,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         <Link href="/" className="text-xl font-bold tracking-tight">
           SEO Product Managers
         </Link>
@@ -26,29 +26,31 @@ export function Header() {
           >
             Browse jobs
           </Link>
+          {!isLoading && user && (
+            <>
+              <Link
+                href="/dashboard"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Applications
+              </Link>
+              <Link
+                href="/dashboard/settings"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Settings
+              </Link>
+            </>
+          )}
           {!isLoading && (
             user ? (
-              <div className="flex items-center gap-3">
-                <Link
-                  href="/dashboard"
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Applications
-                </Link>
-                <Link
-                  href="/dashboard/settings"
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Settings
-                </Link>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => signOut()}
-                >
-                  Sign out
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => signOut()}
+              >
+                Sign out
+              </Button>
             ) : (
               <Button
                 variant="outline"
