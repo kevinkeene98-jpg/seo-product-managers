@@ -23,9 +23,9 @@ function NavContent({ userName, onNavigate }: { userName: string; onNavigate?: (
 
   return (
     <>
-      <div className="border-b px-4 py-4">
-        <Link href="/" className="text-lg font-bold tracking-tight">
-          SPM
+      <div className="border-b px-4 py-3">
+        <Link href="/" className="text-sm font-bold leading-tight tracking-tight">
+          SEO Product Managers
         </Link>
       </div>
 
@@ -102,8 +102,8 @@ export function DashboardSidebar({ userName }: Props) {
             </div>
           </SheetContent>
         </Sheet>
-        <Link href="/dashboard" className="ml-3 text-lg font-bold">
-          SPM
+        <Link href="/dashboard" className="ml-3 text-sm font-bold">
+          SEO Product Managers
         </Link>
       </div>
     </>

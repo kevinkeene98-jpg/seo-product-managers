@@ -33,11 +33,14 @@ export function Header() {
                   href="/dashboard"
                   className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  Dashboard
+                  Applications
                 </Link>
-                <span className="text-sm text-muted-foreground">
-                  {user.name || user.email}
-                </span>
+                <Link
+                  href="/dashboard/settings"
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Settings
+                </Link>
                 <Button
                   variant="outline"
                   size="sm"
@@ -93,11 +96,15 @@ export function Header() {
                       className="text-lg font-medium"
                       onClick={() => setOpen(false)}
                     >
-                      Dashboard
+                      Applications
                     </Link>
-                    <span className="text-sm text-muted-foreground">
-                      {user.name || user.email}
-                    </span>
+                    <Link
+                      href="/dashboard/settings"
+                      className="text-lg font-medium"
+                      onClick={() => setOpen(false)}
+                    >
+                      Settings
+                    </Link>
                     <button
                       className="text-lg font-medium text-left"
                       onClick={() => { signOut(); setOpen(false); }}

@@ -36,9 +36,9 @@ export function BuilderSidebar() {
   return (
     <aside className="flex w-48 flex-col border-r bg-background">
       {/* Logo */}
-      <div className="flex h-14 items-center border-b px-3">
-        <Link href="/" className="text-lg font-bold tracking-tight">
-          SPM
+      <div className="border-b px-3 py-3">
+        <Link href="/" className="text-sm font-bold leading-tight tracking-tight">
+          SEO Product Managers
         </Link>
       </div>
 
