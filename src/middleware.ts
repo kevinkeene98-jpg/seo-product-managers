@@ -1,16 +1,24 @@
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
 const SESSION_COOKIE = "spm_session";
 const SESSION_MAX_AGE = 30 * 24 * 60 * 60;
 
-export function middleware(request: NextRequest) {
+const isProtectedRoute = createRouteMatcher([
+  "/dashboard(.*)",
+  "/api/dashboard(.*)",
+]);
+
+export default clerkMiddleware(async (auth, request) => {
+  if (isProtectedRoute(request)) {
+    await auth.protect();
+  }
+
   const response = NextResponse.next();
 
+  // Issue anonymous session cookie for builder routes (preserves anonymous usage)
   if (!request.cookies.get(SESSION_COOKIE)) {
-    // Generate a simple random ID (nanoid isn't available in edge runtime)
-    const id = crypto.randomUUID();
-    response.cookies.set(SESSION_COOKIE, id, {
+    response.cookies.set(SESSION_COOKIE, crypto.randomUUID(), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
@@ -20,15 +28,11 @@ export function middleware(request: NextRequest) {
   }
 
   return response;
-}
+});
 
 export const config = {
   matcher: [
-    "/builder/:path*",
-    "/api/builder/:path*",
-    "/api/auth/:path*",
-    "/api/dashboard/:path*",
-    "/dashboard",
-    "/dashboard/:path*",
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/(api|trpc)(.*)",
   ],
 };

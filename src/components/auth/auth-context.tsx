@@ -8,7 +8,7 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
-import { AuthDialog } from "./auth-dialog";
+import { useUser, useClerk } from "@clerk/nextjs";
 
 interface User {
   userId: number;
@@ -29,10 +29,10 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { isLoaded, isSignedIn } = useUser();
+  const clerk = useClerk();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogTrigger, setDialogTrigger] = useState<string | undefined>();
 
   const refreshUser = useCallback(async () => {
     try {
@@ -46,44 +46,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Fetch app-specific user data when Clerk auth state changes
   useEffect(() => {
-    refreshUser();
-  }, [refreshUser]);
+    if (!isLoaded) return;
+    if (isSignedIn) {
+      refreshUser();
+    } else {
+      setUser(null);
+      setIsLoading(false);
+    }
+  }, [isLoaded, isSignedIn, refreshUser]);
 
-  const openAuthDialog = useCallback((trigger?: string) => {
-    setDialogTrigger(trigger);
-    setDialogOpen(true);
-  }, []);
+  const openAuthDialog = useCallback(
+    (_trigger?: string) => {
+      clerk.openSignIn({
+        fallbackRedirectUrl: window.location.href,
+      });
+    },
+    [clerk]
+  );
 
   const closeAuthDialog = useCallback(() => {
-    setDialogOpen(false);
-    setDialogTrigger(undefined);
-  }, []);
+    clerk.closeSignIn();
+  }, [clerk]);
 
   const signOut = useCallback(async () => {
-    await fetch("/api/auth/signout", { method: "POST" });
+    await clerk.signOut();
     setUser(null);
-  }, []);
-
-  const handleAuthSuccess = useCallback(
-    (newUser: User) => {
-      setUser(newUser);
-      closeAuthDialog();
-    },
-    [closeAuthDialog]
-  );
+  }, [clerk]);
 
   return (
     <AuthContext.Provider
       value={{ user, isLoading, openAuthDialog, closeAuthDialog, signOut, refreshUser }}
     >
       {children}
-      <AuthDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        trigger={dialogTrigger}
-        onSuccess={handleAuthSuccess}
-      />
     </AuthContext.Provider>
   );
 }

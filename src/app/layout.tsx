@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 import { AuthProvider } from "@/components/auth/auth-context";
 import "./globals.css";
 
@@ -29,7 +30,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>{children}</AuthProvider>
+        <ClerkProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </ClerkProvider>
       </body>
     </html>
   );
