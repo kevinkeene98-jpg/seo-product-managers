@@ -15,9 +15,9 @@ interface RecentApp {
 }
 
 const navItems = [
-  { href: "/dashboard", label: "Applications", icon: "📋" },
-  { href: "/jobs", label: "Browse Jobs", icon: "🔍" },
-  { href: "/dashboard/settings", label: "Settings", icon: "⚙️" },
+  { href: "/dashboard", label: "Applications" },
+  { href: "/jobs", label: "Browse Jobs" },
+  { href: "/dashboard/settings", label: "Settings" },
 ];
 
 export function BuilderSidebar() {
@@ -58,7 +58,6 @@ export function BuilderSidebar() {
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
-              <span className="shrink-0 text-base">{item.icon}</span>
               <span className="truncate">{item.label}</span>
             </Link>
           );

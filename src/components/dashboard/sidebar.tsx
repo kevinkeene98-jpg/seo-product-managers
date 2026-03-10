@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const navItems = [
-  { href: "/dashboard", label: "Applications", icon: "📋" },
-  { href: "/dashboard/settings", label: "Settings", icon: "⚙️" },
+  { href: "/dashboard", label: "Applications" },
+  { href: "/dashboard/settings", label: "Settings" },
 ];
 
 interface Props {
@@ -48,7 +48,6 @@ function NavContent({ userName, onNavigate }: { userName: string; onNavigate?: (
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
-              <span>{item.icon}</span>
               {item.label}
             </Link>
           );

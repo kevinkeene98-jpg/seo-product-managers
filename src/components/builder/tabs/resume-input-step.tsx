@@ -116,7 +116,6 @@ export function ResumeInputStep({ onParsed }: Props) {
           onClick={() => fileRef.current?.click()}
         >
           <CardContent className="flex flex-col items-center gap-2 p-6 text-center">
-            <div className="text-3xl">📄</div>
             <span className="font-medium">Upload File</span>
             <span className="text-xs text-muted-foreground">.pdf or .docx</span>
           </CardContent>
@@ -127,7 +126,6 @@ export function ResumeInputStep({ onParsed }: Props) {
           onClick={() => setMode("paste")}
         >
           <CardContent className="flex flex-col items-center gap-2 p-6 text-center">
-            <div className="text-3xl">📋</div>
             <span className="font-medium">Paste Text</span>
             <span className="text-xs text-muted-foreground">Copy & paste</span>
           </CardContent>
