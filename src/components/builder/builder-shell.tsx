@@ -14,6 +14,7 @@ import { BuilderSidebar } from "./builder-sidebar";
 import { UnsavedBanner } from "./unsaved-banner";
 import { useUndo } from "./use-undo";
 import { useAuth } from "@/components/auth/auth-context";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { ResumeData, BuilderTab, QAEntry } from "@/lib/types/resume";
 import type { Job } from "@/lib/types";
@@ -212,7 +213,7 @@ export function BuilderShell({
 
         <div className="flex min-h-0 flex-1">
           {/* Left Panel: Preview or Editor */}
-          <div className="flex w-1/2 flex-col border-r">
+          <div className={cn("flex flex-col border-r", user ? "w-3/5" : "w-1/2")}>
             <div className="flex-1 overflow-y-auto">
               {/* Expandable Job Description — pushes content below it down */}
               {jdOpen && (
@@ -306,7 +307,7 @@ export function BuilderShell({
           </div>
 
           {/* Right Panel: Chat */}
-          <div className="flex w-1/2 flex-col">
+          <div className={cn("flex flex-col", user ? "w-2/5" : "w-1/2")}>
             <ChatPanel
               applicationId={applicationId}
               initialMessages={initialChatMessages}
