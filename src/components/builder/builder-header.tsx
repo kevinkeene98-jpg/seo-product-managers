@@ -3,14 +3,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { jobUrl } from "@/lib/format";
-import type { ResumeData } from "@/lib/types/resume";
 import type { Job } from "@/lib/types";
 
 interface Props {
   job: Job;
   remainingMessages: number;
-  resumeData: ResumeData | null;
-  onExportPdf: () => void;
   saveStatus: "idle" | "saving" | "saved";
   jdOpen: boolean;
   onToggleJd: () => void;
@@ -20,8 +17,6 @@ interface Props {
 export function BuilderHeader({
   job,
   remainingMessages,
-  resumeData,
-  onExportPdf,
   saveStatus,
   jdOpen,
   onToggleJd,
@@ -36,7 +31,7 @@ export function BuilderHeader({
               href="/jobs"
               className="text-sm text-muted-foreground hover:text-foreground"
             >
-              Jobs
+              Open roles
             </Link>
             <span className="text-sm text-muted-foreground">/</span>
           </>
@@ -88,9 +83,17 @@ export function BuilderHeader({
         <span className="text-xs text-muted-foreground">
           {remainingMessages >= 999 ? "Unlimited" : `${remainingMessages}/20 messages`}
         </span>
-        <Button size="sm" disabled={!resumeData} onClick={onExportPdf}>
-          Export PDF
-        </Button>
+        {job.applyUrl && (
+          <a
+            href={job.applyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button size="sm" variant="default">
+              Apply on job site
+            </Button>
+          </a>
+        )}
       </div>
     </header>
   );
