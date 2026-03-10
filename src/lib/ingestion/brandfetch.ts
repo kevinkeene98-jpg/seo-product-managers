@@ -40,9 +40,11 @@ export async function getCompanyLogoUrl(
 
     // Use the first (best match) result's icon, or build a CDN URL from domain
     const best = results[0];
-    const logoUrl =
-      best.icon ||
-      `https://cdn.brandfetch.io/${best.domain}/w/128/h/128/fallback/lettermark?c=${BRANDFETCH_CLIENT_ID}`;
+    // Strip query params from icon URLs to avoid expiring CDN tokens
+    const rawIcon = best.icon
+      ? best.icon.split("?")[0]
+      : `https://cdn.brandfetch.io/${best.domain}/w/128/h/128/fallback/lettermark`;
+    const logoUrl = rawIcon;
 
     logoCache.set(cacheKey, logoUrl);
     return logoUrl;
