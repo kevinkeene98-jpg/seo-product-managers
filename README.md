@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SEO Product Managers
+
+A job board and AI-powered resume builder for SEO and product management roles. Built with Next.js, Neon Postgres, and Claude.
+
+## Tech Stack
+
+- **Framework:** Next.js 16 (App Router), TypeScript, Tailwind CSS
+- **Database:** Neon Postgres + Drizzle ORM
+- **AI:** Anthropic Claude (resume parsing, fit assessment, chat)
+- **Jobs:** SerpApi (Google Jobs engine), daily cron crawl
+- **Payments:** Stripe ($12/mo subscription)
+- **Auth:** Clerk
+- **Email:** Resend (job alerts)
+- **Logos:** Brandfetch
+- **Hosting:** Vercel
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
+cp .env.local.example .env.local  # then fill in your keys
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a `.env.local` file with the following:
 
-## Learn More
+```env
+# Database (Neon Postgres)
+DATABASE_URL=postgresql://...
 
-To learn more about Next.js, take a look at the following resources:
+# AI
+ANTHROPIC_API_KEY=sk-ant-...
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Job crawling
+SERPAPI_API_KEY=...
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Company logos
+BRANDFETCH_CLIENT_ID=...
 
-## Deploy on Vercel
+# Auth (Clerk)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
+CLERK_SECRET_KEY=sk_...
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Payments (Stripe)
+STRIPE_SECRET_KEY=sk_...
+STRIPE_PRICE_ID=price_...
+STRIPE_WEBHOOK_SECRET=whsec_...
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Email (Resend)
+RESEND_API_KEY=re_...
+FROM_EMAIL=notifications@yourdomain.com
+
+# App URLs
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Cron auth
+CRON_SECRET=any-secret-string
+```
+
+### Where to get each key
+
+| Variable | Source |
+|---|---|
+| `DATABASE_URL` | [Neon console](https://console.neon.tech) — connection string from your project |
+| `ANTHROPIC_API_KEY` | [Anthropic console](https://console.anthropic.com) |
+| `SERPAPI_API_KEY` | [SerpApi dashboard](https://serpapi.com/dashboard) |
+| `BRANDFETCH_CLIENT_ID` | [Brandfetch developers](https://developers.brandfetch.com) |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` | [Clerk dashboard](https://dashboard.clerk.com) |
+| `STRIPE_SECRET_KEY` / `STRIPE_PRICE_ID` / `STRIPE_WEBHOOK_SECRET` | [Stripe dashboard](https://dashboard.stripe.com/apikeys) |
+| `RESEND_API_KEY` | [Resend dashboard](https://resend.com) |
+
+## Database
+
+Drizzle ORM manages the schema. To push schema changes:
+
+```bash
+npx drizzle-kit push
+```
+
+To generate migrations:
+
+```bash
+npx drizzle-kit generate
+```
+
+## Cron
+
+A daily crawl runs at 8:00 AM UTC via Vercel Cron (`/api/cron/crawl`), configured in `vercel.json`. The endpoint is protected by `CRON_SECRET`.
