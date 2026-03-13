@@ -11,9 +11,7 @@ import { ResumePreview } from "./pdf/resume-preview";
 import { CoverLetterPreview } from "./pdf/cover-letter-preview";
 import { ChatPanel } from "./chat/chat-panel";
 import { BuilderSidebar } from "./builder-sidebar";
-import { UnsavedBanner } from "./unsaved-banner";
 import { useUndo } from "./use-undo";
-import { useAuth } from "@/components/auth/auth-context";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { ResumeData, BuilderTab, QAEntry } from "@/lib/types/resume";
@@ -43,6 +41,7 @@ export function BuilderShell({
   const {
     state: resumeData,
     set: setResumeData,
+    replace: replaceResumeData,
     undo: undoResume,
     redo: redoResume,
     canUndo: canUndoResume,
@@ -51,6 +50,7 @@ export function BuilderShell({
   const {
     state: coverLetter,
     set: setCoverLetter,
+    replace: replaceCoverLetter,
     undo: undoCoverLetter,
     redo: redoCoverLetter,
     canUndo: canUndoCoverLetter,
@@ -117,10 +117,10 @@ export function BuilderShell({
 
   const handleResumeParsed = useCallback(
     (data: ResumeData) => {
-      setResumeData(data);
+      replaceResumeData(data);
       save("resumeContent", data);
     },
-    [setResumeData, save]
+    [replaceResumeData, save]
   );
 
   const handleExportResumePdf = useCallback(async () => {
@@ -139,7 +139,7 @@ export function BuilderShell({
   const handleSuggestionAccepted = useCallback(
     (sectionPath: string, content: unknown) => {
       if (sectionPath === "coverLetter") {
-        setCoverLetter(content as string);
+        replaceCoverLetter(content as string);
         setActiveTab("cover-letter");
         return;
       }
@@ -183,10 +183,8 @@ export function BuilderShell({
         }
       }
     },
-    [resumeData, setResumeData]
+    [resumeData, setResumeData, replaceCoverLetter]
   );
-
-  const { user } = useAuth();
 
   const coverLetterRef = useRef<CoverLetterTabHandle>(null);
   const qaRef = useRef<QATabHandle>(null);
@@ -196,6 +194,16 @@ export function BuilderShell({
 
   // Editing mode: when true, left panel shows editor; when false, shows preview
   const [isEditing, setIsEditing] = useState(false);
+
+  // Confirmation modal for removing resume
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
+
+  const handleRemoveResume = useCallback(() => {
+    replaceResumeData(null);
+    save("resumeContent", null);
+    setShowRemoveConfirm(false);
+    setIsEditing(false);
+  }, [replaceResumeData, save]);
 
   // Determine if the current tab has previewable content
   const hasResumePreview = activeTab === "resume" && resumeData;
@@ -216,27 +224,22 @@ export function BuilderShell({
 
   return (
     <div className="flex h-screen">
-      {/* Sidebar — logged in only */}
-      {user && (
-        <div className="hidden md:flex">
-          <BuilderSidebar />
-        </div>
-      )}
+      <div className="hidden md:flex">
+        <BuilderSidebar />
+      </div>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        {!user && <UnsavedBanner />}
         <BuilderHeader
           job={job}
           remainingMessages={initialRemaining}
           saveStatus={saveStatus}
           jdOpen={jdOpen}
           onToggleJd={() => setJdOpen(!jdOpen)}
-          showBreadcrumb={!user}
         />
 
         <div className="flex min-h-0 flex-1">
           {/* Left Panel: Preview or Editor */}
-          <div className={cn("flex flex-col border-r", user ? "w-3/5" : "w-1/2")}>
+          <div className={cn("flex flex-col border-r", "w-3/5")}>
             <div className="flex-1 overflow-y-auto">
               {/* Expandable Job Description — pushes content below it down */}
               {jdOpen && (
@@ -279,6 +282,16 @@ export function BuilderShell({
                       onClick={() => setIsEditing(!isEditing)}
                     >
                       {isEditing ? "Done" : "Edit"}
+                    </Button>
+                  )}
+                  {activeTab === "resume" && resumeData && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs text-muted-foreground"
+                      onClick={() => setShowRemoveConfirm(true)}
+                    >
+                      Remove
                     </Button>
                   )}
                   {activeTab === "cover-letter" && (
@@ -387,6 +400,7 @@ export function BuilderShell({
                       ref={coverLetterRef}
                       content={coverLetter}
                       onChange={setCoverLetter}
+                      onReplace={replaceCoverLetter}
                       applicationId={applicationId}
                       hasResume={!!resumeData}
                       onGeneratingChange={setGeneratingCL}
@@ -419,7 +433,7 @@ export function BuilderShell({
           </div>
 
           {/* Right Panel: Chat */}
-          <div className={cn("flex flex-col", user ? "w-2/5" : "w-1/2")}>
+          <div className={cn("flex flex-col", "w-2/5")}>
             <ChatPanel
               applicationId={applicationId}
               initialMessages={initialChatMessages}
@@ -432,6 +446,34 @@ export function BuilderShell({
           </div>
         </div>
       </div>
+
+      {/* Remove resume confirmation modal */}
+      {showRemoveConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="mx-4 w-full max-w-sm rounded-lg bg-background p-6 shadow-lg">
+            <h3 className="text-lg font-semibold">Remove resume</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Are you sure you want to remove your resume? You&apos;ll need to upload it again to continue building.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowRemoveConfirm(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleRemoveResume}
+              >
+                Remove
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

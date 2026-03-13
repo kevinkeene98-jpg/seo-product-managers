@@ -11,7 +11,6 @@ interface Props {
   saveStatus: "idle" | "saving" | "saved";
   jdOpen: boolean;
   onToggleJd: () => void;
-  showBreadcrumb?: boolean;
 }
 
 export function BuilderHeader({
@@ -20,22 +19,10 @@ export function BuilderHeader({
   saveStatus,
   jdOpen,
   onToggleJd,
-  showBreadcrumb,
 }: Props) {
   return (
     <header className="flex h-14 items-center justify-between border-b bg-background px-4">
       <div className="flex items-center gap-2">
-        {showBreadcrumb && (
-          <>
-            <Link
-              href="/jobs"
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              Open roles
-            </Link>
-            <span className="text-sm text-muted-foreground">/</span>
-          </>
-        )}
         {job.companyLogoUrl ? (
           <img
             src={job.companyLogoUrl}
@@ -79,9 +66,6 @@ export function BuilderHeader({
         <span className="text-xs text-muted-foreground">
           {saveStatus === "saving" && "Saving..."}
           {saveStatus === "saved" && "Saved"}
-        </span>
-        <span className="text-xs text-muted-foreground">
-          {remainingMessages >= 999 ? "Unlimited" : `${remainingMessages}/20 messages`}
         </span>
         {job.applyUrl && (
           <a

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/components/auth/auth-context";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -19,7 +18,6 @@ interface Props {
 
 function NavContent({ userName, onNavigate }: { userName: string; onNavigate?: () => void }) {
   const pathname = usePathname();
-  const { signOut } = useAuth();
 
   return (
     <>
@@ -56,12 +54,6 @@ function NavContent({ userName, onNavigate }: { userName: string; onNavigate?: (
 
       <div className="border-t p-4">
         <p className="truncate text-sm font-medium">{userName}</p>
-        <button
-          onClick={() => signOut()}
-          className="mt-1 text-xs text-muted-foreground hover:text-foreground"
-        >
-          Sign out
-        </button>
       </div>
     </>
   );

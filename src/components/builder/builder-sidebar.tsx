@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/components/auth/auth-context";
 import { cn } from "@/lib/utils";
 
 interface RecentApp {
@@ -145,17 +144,14 @@ function EllipsisMenu({
 
 export function BuilderSidebar() {
   const pathname = usePathname();
-  const { user, signOut } = useAuth();
   const [recentApps, setRecentApps] = useState<RecentApp[]>([]);
-  const [confirmSignOut, setConfirmSignOut] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
     fetch("/api/dashboard/applications/recent")
       .then((r) => (r.ok ? r.json() : { apps: [] }))
       .then((data) => setRecentApps(data.apps || []))
       .catch(() => {});
-  }, [user]);
+  }, []);
 
   const handleDeleted = (appId: number) => {
     setRecentApps((prev) => prev.filter((a) => a.id !== appId));
@@ -168,131 +164,100 @@ export function BuilderSidebar() {
   return (
     <aside className="flex w-48 flex-col border-r bg-background">
       {/* Logo */}
-      <div className="border-b px-3 py-3">
+      <div className="flex h-14 items-center border-b px-3">
         <Link href="/" className="text-sm font-bold leading-tight tracking-tight">
           SEO Product Managers
         </Link>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 space-y-1 overflow-y-auto p-1.5">
-        {navItems.map((item) => {
-          const isActive =
-            item.href === "/dashboard"
-              ? pathname === "/dashboard"
-              : pathname.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              title={item.label}
-              className={cn(
-                "flex items-center gap-2 rounded-md px-2.5 py-2 text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              )}
-            >
-              <span className="truncate">{item.label}</span>
-            </Link>
-          );
-        })}
+      <nav className="flex flex-1 flex-col overflow-y-auto">
+        <div className="space-y-1 p-1.5">
+          {navItems.map((item) => {
+            const isActive =
+              item.href === "/dashboard"
+                ? pathname === "/dashboard"
+                : pathname.startsWith(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                title={item.label}
+                className={cn(
+                  "flex items-center gap-2 rounded-md px-2.5 py-2 text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                <span className="truncate">{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
 
         {/* Recent Applications */}
         {recentApps.length > 0 && (
-          <div className="mt-4 border-t pt-3">
-            <p className="mb-1 px-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <div className="border-t">
+            <p className="mb-1 px-4 pt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Recent
             </p>
-            {recentApps.map((app) => {
-              const href = `/builder/${app.jobId}`;
-              const isActive = pathname === href;
-              return (
-                <div
-                  key={app.id}
-                  className={cn(
-                    "group flex items-center gap-2 rounded-md px-2.5 py-1.5 text-sm transition-colors",
-                    isActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  )}
-                >
-                  <Link href={href} className="flex min-w-0 flex-1 items-center gap-2">
-                    {app.companyLogoUrl ? (
-                      <img
-                        src={app.companyLogoUrl}
-                        alt={app.companyName}
-                        className="h-4 w-4 shrink-0 rounded object-contain"
-                      />
-                    ) : (
-                      <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-muted text-[8px] font-bold text-muted-foreground">
-                        {app.companyName.charAt(0)}
-                      </span>
+            <div className="space-y-1 p-1.5 pt-0">
+              {recentApps.map((app) => {
+                const href = `/builder/${app.jobId}`;
+                const isActive = pathname === href;
+                return (
+                  <div
+                    key={app.id}
+                    className={cn(
+                      "group flex items-center gap-2 rounded-md px-2.5 py-1.5 text-sm transition-colors",
+                      isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
-                    <span className="truncate text-xs">{app.jobTitle}</span>
-                  </Link>
-                  <EllipsisMenu
-                    appId={app.id}
-                    onDeleted={handleDeleted}
-                    onApplied={handleApplied}
-                  />
-                </div>
-              );
-            })}
+                  >
+                    <Link href={href} className="flex min-w-0 flex-1 items-center gap-2">
+                      {app.companyLogoUrl ? (
+                        <img
+                          src={app.companyLogoUrl}
+                          alt={app.companyName}
+                          className="h-4 w-4 shrink-0 rounded object-contain"
+                        />
+                      ) : (
+                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-muted text-[8px] font-bold text-muted-foreground">
+                          {app.companyName.charAt(0)}
+                        </span>
+                      )}
+                      <span className="truncate text-xs">{app.jobTitle}</span>
+                    </Link>
+                    <EllipsisMenu
+                      appId={app.id}
+                      onDeleted={handleDeleted}
+                      onApplied={handleApplied}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
         <Link
           href="/jobs"
-          className="mt-2 block px-2.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+          className="mt-2 block px-4 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           Browse more open roles &rarr;
         </Link>
       </nav>
 
-      {/* User */}
+      {/* Footer */}
       <div className="border-t p-2">
-        <div className="flex flex-col gap-1">
-          <div
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary"
-            title={user?.name || user?.email || ""}
-          >
-            {(user?.name || user?.email || "U").charAt(0).toUpperCase()}
-          </div>
-          <p className="truncate px-1 text-xs font-medium">
-            {user?.name || user?.email}
-          </p>
-          <Link
-            href="/dashboard/settings"
-            className="px-1 text-left text-xs text-muted-foreground hover:text-foreground"
-          >
-            Settings
-          </Link>
-          {confirmSignOut ? (
-            <div className="flex items-center gap-2 px-1">
-              <span className="text-xs text-muted-foreground">Sign out?</span>
-              <button
-                onClick={() => signOut()}
-                className="text-xs font-medium text-red-500 hover:text-red-600"
-              >
-                Yes
-              </button>
-              <button
-                onClick={() => setConfirmSignOut(false)}
-                className="text-xs text-muted-foreground hover:text-foreground"
-              >
-                No
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setConfirmSignOut(true)}
-              className="px-1 text-left text-xs text-muted-foreground hover:text-foreground"
-            >
-              Sign out
-            </button>
-          )}
-        </div>
+        <Link
+          href="/dashboard/settings"
+          className="px-1 text-left text-xs text-muted-foreground hover:text-foreground"
+        >
+          Settings
+        </Link>
       </div>
     </aside>
   );
