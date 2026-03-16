@@ -18,9 +18,9 @@ export const SEARCH_LOCATIONS = [
     serpApiParam: "New York, New York, United States",
   },
   {
-    label: "Colorado",
-    value: "colorado" as const,
-    serpApiParam: "Colorado, United States",
+    label: "California",
+    value: "california" as const,
+    serpApiParam: "California, United States",
   },
 ] as const;
 
@@ -47,8 +47,8 @@ export const EXPERIENCE_OPTIONS = [
 ] as const;
 
 export const LOCATION_FILTER_OPTIONS = [
-  { label: "All Locations", value: "" },
+  { label: "All locations", value: "" },
   { label: "Remote", value: "remote" },
   { label: "New York", value: "new_york" },
-  { label: "Colorado", value: "colorado" },
+  { label: "California", value: "california" },
 ] as const;
