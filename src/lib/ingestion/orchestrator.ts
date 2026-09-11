@@ -24,9 +24,8 @@ export async function runCrawl(): Promise<CrawlSummary> {
     for (const loc of SEARCH_LOCATIONS) {
       queryCount++;
       const query: SearchQuery = {
-        keyword,
+        keyword: "keywordSuffix" in loc ? `${keyword} ${loc.keywordSuffix}` : keyword,
         location: loc.serpApiParam,
-        locationExtra: "serpApiExtra" in loc ? loc.serpApiExtra : undefined,
       };
 
       // Insert crawl log entry
@@ -166,6 +165,18 @@ export async function runCrawl(): Promise<CrawlSummary> {
         // Continue with next query
       }
     }
+  }
+
+  // Failed searches cannot tell us whether existing jobs are still listed.
+  // Preserve freshness for the whole crawl if any query was incomplete.
+  if (totalErrors > 0) {
+    return {
+      totalNew,
+      totalUpdated,
+      totalDeactivated: 0,
+      totalErrors,
+      queries: queryCount,
+    };
   }
 
   // Freshness pass: increment missed count for active jobs not seen this crawl

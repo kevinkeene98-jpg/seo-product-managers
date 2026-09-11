@@ -1,4 +1,4 @@
-import { JobProvider, RawJobResult, SearchQuery } from "./types";
+import type { JobProvider, RawJobResult, SearchQuery } from "./types";
 
 interface SerpApiJob {
   job_id: string;
@@ -36,6 +36,10 @@ export class SerpProvider implements JobProvider {
   name = "serpapi";
 
   async search(query: SearchQuery): Promise<RawJobResult[]> {
+    const apiKey = process.env.SERPAPI_API_KEY?.trim();
+    if (!apiKey) {
+      throw new Error("SERPAPI_API_KEY is not configured");
+    }
     const allResults: RawJobResult[] = [];
     let nextPageToken: string | undefined;
 
@@ -44,7 +48,7 @@ export class SerpProvider implements JobProvider {
         engine: "google_jobs",
         q: query.keyword,
         location: query.location,
-        api_key: process.env.SERPAPI_API_KEY!,
+        api_key: apiKey,
         hl: "en",
         gl: "us",
       });
@@ -61,15 +65,21 @@ export class SerpProvider implements JobProvider {
 
       const url = `https://serpapi.com/search.json?${params.toString()}`;
 
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        signal: AbortSignal.timeout(30_000),
+        cache: "no-store",
+      });
+      const data: SerpApiResponse = await response.json();
+
       if (!response.ok) {
         throw new Error(
-          `SerpApi request failed: ${response.status} ${response.statusText}`
+          `SerpApi request failed: ${response.status} ${data.error || response.statusText}`
         );
       }
 
-      const data: SerpApiResponse = await response.json();
-
+      // Google Jobs reports an exhausted/empty search in the error field.
+      // In particular, this must not discard jobs from earlier pages.
+      if (data.error === "Google hasn't returned any results for this query.") break;
       if (data.error) {
         throw new Error(`SerpApi error: ${data.error}`);
       }

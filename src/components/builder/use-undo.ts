@@ -9,6 +9,13 @@ export function useUndo<T>(initialState: T) {
   const pastRef = useRef<T[]>([]);
   const futureRef = useRef<T[]>([]);
 
+  // Replace imported/generated content without retaining intermediate edits.
+  const replace = useCallback((newState: T) => {
+    pastRef.current = [];
+    futureRef.current = [];
+    setState(() => newState);
+  }, []);
+
   const set = useCallback((newState: T | ((prev: T) => T)) => {
     setState((prev) => {
       const next = typeof newState === "function" ? (newState as (prev: T) => T)(prev) : newState;
@@ -41,5 +48,5 @@ export function useUndo<T>(initialState: T) {
   const canUndo = pastRef.current.length > 0;
   const canRedo = futureRef.current.length > 0;
 
-  return { state, set, undo, redo, canUndo, canRedo };
+  return { state, set, replace, undo, redo, canUndo, canRedo };
 }

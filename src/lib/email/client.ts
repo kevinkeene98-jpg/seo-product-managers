@@ -1,17 +1,15 @@
 import { Resend } from "resend";
 
-if (!process.env.RESEND_API_KEY) {
-  throw new Error("RESEND_API_KEY is not set");
-}
-
-export const resend = new Resend(process.env.RESEND_API_KEY);
-
 const FROM_EMAIL = process.env.FROM_EMAIL || "notifications@seoproductmanagers.com";
 
 export async function sendJobAlertEmail(
   to: string,
   jobs: { title: string; company: string; url: string }[]
 ) {
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error("RESEND_API_KEY is not set");
+  }
+  const resend = new Resend(process.env.RESEND_API_KEY);
   const jobList = jobs
     .map(
       (j) =>

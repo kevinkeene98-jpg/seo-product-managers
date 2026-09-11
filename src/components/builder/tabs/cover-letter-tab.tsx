@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 interface Props {
   content: string | null;
   onChange: (content: string) => void;
+  onReplace: (content: string) => void;
   applicationId: number;
   hasResume: boolean;
   onGeneratingChange?: (generating: boolean) => void;
@@ -19,7 +20,7 @@ export interface CoverLetterTabHandle {
 }
 
 export const CoverLetterTab = forwardRef<CoverLetterTabHandle, Props>(
-  function CoverLetterTab({ content, onChange, applicationId, hasResume, onGeneratingChange, onNavigateToResume }, ref) {
+  function CoverLetterTab({ content, onChange, onReplace, applicationId, hasResume, onGeneratingChange, onNavigateToResume }, ref) {
     const [generating, setGeneratingState] = useState(false);
     const setGenerating = useCallback((v: boolean) => {
       setGeneratingState(v);
@@ -30,7 +31,7 @@ export const CoverLetterTab = forwardRef<CoverLetterTabHandle, Props>(
     const handleGenerate = useCallback(async () => {
       setGenerating(true);
       setError(null);
-      onChange("");
+      onReplace("");
 
       try {
         const res = await fetch("/api/builder/cover-letter", {
@@ -61,7 +62,7 @@ export const CoverLetterTab = forwardRef<CoverLetterTabHandle, Props>(
               const data = JSON.parse(line.slice(6));
               if (data.text) {
                 full += data.text;
-                onChange(full);
+                onReplace(full);
               }
               if (data.error) {
                 throw new Error(data.error);
@@ -77,7 +78,7 @@ export const CoverLetterTab = forwardRef<CoverLetterTabHandle, Props>(
       } finally {
         setGenerating(false);
       }
-    }, [applicationId, onChange]);
+    }, [applicationId, onReplace, setGenerating]);
 
     useImperativeHandle(ref, () => ({ generate: handleGenerate, generating }), [handleGenerate, generating]);
 

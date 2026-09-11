@@ -91,3 +91,18 @@ npx drizzle-kit generate
 ## Cron
 
 A daily crawl runs at 8:00 AM UTC via Vercel Cron (`/api/cron/crawl`), configured in `vercel.json`. The endpoint is protected by `CRON_SECRET`.
+
+The cron response returns HTTP 502 and `success: false` if any search fails;
+successful searches are still imported. Failed crawls do not age or deactivate
+existing listings. Check failed rows in `crawl_logs` for the upstream error.
+An empty Google search is a normal result, including at the end of pagination.
+
+For SerpApi failures, verify `SERPAPI_API_KEY` and `CRON_SECRET` in the Vercel
+project's **Production** environment and redeploy after changing them. HTTP 401
+from SerpApi indicates an authentication problem; HTTP 429 can indicate an
+exhausted quota or a throughput limit. Remote queries include `remote` in the
+search text because Google deprecated the `ltype` filter (see the
+[Google Jobs API documentation](https://serpapi.com/google-jobs-api)).
+
+Run the isolated crawl regression tests with `npm test`. These mock SerpApi and
+the database, so they do not use API credits or modify production listings.
