@@ -27,6 +27,13 @@ function load(file, dependencies = {}, globals = {}) {
 }
 
 const query = { keyword: "SEO product manager", location: "United States" };
+
+test("missing optional email credentials do not prevent importing the app", async () => {
+  const { sendJobAlertEmail } = load("src/lib/email/client.ts", {
+    resend: { Resend: class { constructor() { assert.fail("must not construct without key"); } } },
+  }, { process: { env: {} } });
+  await assert.rejects(sendJobAlertEmail("test@example.com", []), /RESEND_API_KEY is not set/);
+});
 const job = {
   job_id: "job-1", title: "SEO Product Manager", company_name: "Example",
   location: "Anywhere", description: "Manage SEO products",
