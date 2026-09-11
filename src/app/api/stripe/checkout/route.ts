@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuthUser } from "@/lib/auth";
-import { stripe, PRICE_ID } from "@/lib/stripe/client";
+import { getStripe, PRICE_ID } from "@/lib/stripe/client";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -8,6 +8,7 @@ import { eq } from "drizzle-orm";
 export async function POST() {
   try {
     const user = await requireAuthUser();
+    const stripe = getStripe();
 
     // Get or create Stripe customer
     let customerId: string;

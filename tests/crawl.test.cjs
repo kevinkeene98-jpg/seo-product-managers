@@ -28,6 +28,13 @@ function load(file, dependencies = {}, globals = {}) {
 
 const query = { keyword: "SEO product manager", location: "United States" };
 
+test("missing optional payment credentials do not prevent importing the app", () => {
+  const { getStripe } = load("src/lib/stripe/client.ts", {
+    stripe: { default: class { constructor() { assert.fail("must not construct without key"); } } },
+  }, { process: { env: {} } });
+  assert.throws(getStripe, /STRIPE_SECRET_KEY is not set/);
+});
+
 test("missing optional email credentials do not prevent importing the app", async () => {
   const { sendJobAlertEmail } = load("src/lib/email/client.ts", {
     resend: { Resend: class { constructor() { assert.fail("must not construct without key"); } } },
