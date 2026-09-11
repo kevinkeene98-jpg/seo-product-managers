@@ -7,7 +7,7 @@ A job board and AI-powered resume builder for SEO and product management roles. 
 - **Framework:** Next.js 16 (App Router), TypeScript, Tailwind CSS
 - **Database:** Neon Postgres + Drizzle ORM
 - **AI:** Anthropic Claude (resume parsing, fit assessment, chat)
-- **Jobs:** SerpApi (Google Jobs engine), daily cron crawl
+- **Jobs:** SerpApi (Google Jobs engine), Monday and Wednesday cron crawl
 - **Payments:** Stripe ($12/mo subscription)
 - **Auth:** Clerk
 - **Email:** Resend (job alerts)
@@ -90,7 +90,7 @@ npx drizzle-kit generate
 
 ## Cron
 
-A daily crawl runs at 8:00 AM UTC via Vercel Cron (`/api/cron/crawl`), configured in `vercel.json`. The endpoint is protected by `CRON_SECRET`.
+A crawl runs on Mondays and Wednesdays at 8:00 AM UTC via Vercel Cron (`/api/cron/crawl`), configured in `vercel.json`. The endpoint is protected by `CRON_SECRET`.
 
 The cron response returns HTTP 502 and `success: false` if any search fails;
 successful searches are still imported. Failed crawls do not age or deactivate
