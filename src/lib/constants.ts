@@ -10,7 +10,7 @@ export const SEARCH_LOCATIONS = [
     label: "Remote",
     value: "remote" as const,
     serpApiParam: "United States",
-    serpApiExtra: { ltype: "1" },
+    keywordSuffix: "remote",
   },
   {
     label: "New York",

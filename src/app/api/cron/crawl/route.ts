@@ -5,16 +5,17 @@ export const maxDuration = 300;
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const summary = await runCrawl();
+    const success = summary.totalErrors === 0;
     return NextResponse.json({
-      success: true,
+      success,
       summary,
-    });
+    }, { status: success ? 200 : 502 });
   } catch (error) {
     console.error("Crawl failed:", error);
     return NextResponse.json(
